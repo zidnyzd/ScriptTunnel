@@ -1,0 +1,63 @@
+name: Build & Release
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'zidstoretunnel.sh'
+      - 'VERSION'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Read version
+        id: version
+        run: echo "version=$(cat VERSION)" >> $GITHUB_OUTPUT
+
+      - name: Build encoded script
+        run: |
+          chmod +x build.sh
+          bash build.sh
+
+      - name: Verify build output
+        run: |
+          if [ ! -f "zidstoretunnel" ]; then
+            echo "Error: zidstoretunnel not found"
+            exit 1
+          fi
+          echo "Build output size: $(wc -c < zidstoretunnel) bytes"
+          echo "First line: $(head -1 zidstoretunnel)"
+
+      - name: Commit encoded script
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add zidstoretunnel
+          git diff --cached --quiet || git commit -m "build: encoded v${{ steps.version.outputs.version }}"
+          git push
+
+      - name: Create release tag
+        if: contains(github.event.head_commit.message, 'release:')
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          git tag -a "v${VERSION}" -m "Release v${VERSION}" || true
+          git push origin "v${VERSION}" || true
+
+      - name: Create GitHub Release
+        if: contains(github.event.head_commit.message, 'release:')
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ steps.version.outputs.version }}
+          name: ZidStore Tunnel v${{ steps.version.outputs.version }}
+          files: zidstoretunnel
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
