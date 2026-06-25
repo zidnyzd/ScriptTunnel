@@ -30,23 +30,23 @@ A comprehensive VPN/Tunnel installation script for Ubuntu/Debian servers. This s
 
 ### One-Line Install (Recommended)
 ```bash
-curl -sL https://raw.githubusercontent.com/YOUR_USERNAME/zidstoretunnel/main/zidstoretunnel | sudo bash
+curl -sL https://raw.githubusercontent.com/zidnyzd/ScriptTunnel/main/zidstoretunnel | sudo bash
 ```
 
 Or with a domain:
 ```bash
-curl -sL https://raw.githubusercontent.com/YOUR_USERNAME/zidstoretunnel/main/zidstoretunnel | sudo bash -s yourdomain.com
+curl -sL https://raw.githubusercontent.com/zidnyzd/ScriptTunnel/main/zidstoretunnel | sudo bash -s yourdomain.com
 ```
 
 ### Auto-Update
 ```bash
-curl -sL https://raw.githubusercontent.com/YOUR_USERNAME/zidstoretunnel/main/zidstoretunnel | sudo bash -s -- --update
+curl -sL https://raw.githubusercontent.com/zidnyzd/ScriptTunnel/main/zidstoretunnel | sudo bash -s -- --update
 ```
 
 ### Manual Install
 ```bash
 # Download
-wget -O zidstoretunnel https://raw.githubusercontent.com/YOUR_USERNAME/zidstoretunnel/main/zidstoretunnel
+wget -O zidstoretunnel https://raw.githubusercontent.com/zidnyzd/ScriptTunnel/main/zidstoretunnel
 
 # Make executable
 chmod +x zidstoretunnel
