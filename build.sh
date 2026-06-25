@@ -138,7 +138,7 @@ echo ""
 echo -e "  ${BLUE}Next steps:${NC}"
 echo -e "    1. Upload ${CYAN}${OUTPUT_FILE}${NC} to GitHub (NOT ${INPUT_FILE})"
 echo -e "    2. Users install with:"
-echo -e "       ${GREEN}curl -sL https://raw.githubusercontent.com/<user>/<repo>/main/${OUTPUT_FILE} | sudo bash${NC}"
+echo -e "       ${GREEN}curl -sL https://raw.githubusercontent.com/zidnyzd/ScriptTunnel/main/${OUTPUT_FILE} | sudo bash${NC}"
 echo ""
 if [[ -n "$UPDATE_URL" ]]; then
     echo -e "  ${BLUE}Auto-update URL:${NC} ${CYAN}${UPDATE_URL}${NC}"
