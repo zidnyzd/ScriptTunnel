@@ -21,7 +21,7 @@ A comprehensive VPN/Tunnel installation script for Ubuntu/Debian servers. This s
 
 ## Requirements
 
-- Ubuntu 18.04/20.04/22.04/24.04 or Debian 10/11/12
+- Ubuntu 18.04/20.04/22.04/24.04 or Debian 10/11/12/13
 - Root access
 - A domain pointing to your VPS IP
 - Cloudflare account (for SlowDNS NS records)
