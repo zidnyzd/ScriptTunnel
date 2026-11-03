@@ -22,6 +22,9 @@ Thumbs.db
 *.swp
 *.swo
 
+# CodeGraph
+.codegraph/
+
 # Node modules
 node_modules/
 
