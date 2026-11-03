@@ -23,7 +23,7 @@ Cara Menghindari:
 
 Gejala: HAProxy gagal start dengan error `Address already in use` atau Nginx gagal start karena port 80/443 sudah dipakai.
 
-Penyebab Teknis: HAProxy mengikat port 80 dan 443 (`config/haproxy/haproxy.cfg:42`, `config/haproxy/haproxy.cfg:64`). Nginx juga mengikat port 80 dan 443 (`config/nginx/xray.conf:3`, `config/nginx/xray.conf:11`). Jika Apache terinstal, skrip menghapusnya (`zidstoretunnel.sh:671-676`), namun jika ada layanan lain yang mengikat port 80/443 sebelum skrip dijalankan, konflik akan terjadi. Skrip juga menghentikan HAProxy dan Nginx sebelum setup SSL (`zidstoretunnel.sh:809-812`), namun tidak memeriksa port lain.
+Penyebab Teknis: HAProxy mengikat port 80 dan 443 (`config/haproxy/haproxy.cfg:44`, `config/haproxy/haproxy.cfg:66`). Nginx juga mengikat port 80 dan 443 (`config/nginx/xray.conf:3`, `config/nginx/xray.conf:11`). Jika Apache terinstal, skrip menghapusnya (`zidstoretunnel.sh:671-676`), namun jika ada layanan lain yang mengikat port 80/443 sebelum skrip dijalankan, konflik akan terjadi. Skrip juga menghentikan HAProxy dan Nginx sebelum setup SSL (`zidstoretunnel.sh:809-812`), namun tidak memeriksa port lain.
 
 Cara Menghindari:
 - Hapus service yang mengikat port 80/443 sebelum instalasi: `systemctl stop apache2` atau `systemctl stop nginx` manual.
@@ -80,7 +80,7 @@ Cara Menghindari:
 
 Gejala: README dan CHANGELOG menyebut dukungan gRPC, tetapi konfigurasi Xray yang ada hanya menggunakan WebSocket.
 
-Penyebab Teknis: Seluruh konfigurasi Xray di repo menggunakan `network: "ws"` (`config/xray/vmess.json:21`, `config/xray/vless.json:21`, `config/xray/trojan.json:20`, `config/xray/shadowsocks.json:22`). Tidak ada `grpcSettings` di salah satu berkas. Klaim gRPC berasal dari dokumentasi, bukan dari template lokal. HAProxy juga memiliki blok frontend TCP opsional yang ter-comment (`config/haproxy/haproxy.cfg:81-116`), yang bisa dipakai untuk gRPC, namun tidak aktif secara default.
+Penyebab Teknis: Seluruh konfigurasi Xray di repo menggunakan `network: "ws"` (`config/xray/vmess.json:21`, `config/xray/vless.json:21`, `config/xray/trojan.json:20`, `config/xray/shadowsocks.json:22`). Tidak ada `grpcSettings` di salah satu berkas. Klaim gRPC berasal dari dokumentasi, bukan dari template lokal. HAProxy juga memiliki blok frontend TCP opsional yang ter-comment (`config/haproxy/haproxy.cfg:83-118`), yang bisa dipakai untuk gRPC, namun tidak aktif secara default.
 
 Cara Menghindari:
 - Jangan mengandalkan gRPC kecuali konfigurasi diubah secara eksplisit.
@@ -139,8 +139,8 @@ Cara Menghindari:
 | `zidstoretunnel.sh:1078-1080` | Hapus unit dropbear |
 | `zidstoretunnel.sh:1083-1084` | Start dropbear |
 | `zidstoretunnel.sh:1223` | swap_size 2G |
-| `config/haproxy/haproxy.cfg:42` | Bind 443 |
-| `config/haproxy/haproxy.cfg:64` | Bind 80 |
+| `config/haproxy/haproxy.cfg:44` | Bind 443 |
+| `config/haproxy/haproxy.cfg:66` | Bind 80 |
 | `config/nginx/nginx.conf:34-35` | Rate limit zone |
 | `config/nginx/xray.conf:3` | Listen 80 |
 | `config/nginx/xray.conf:11` | Listen 443 |

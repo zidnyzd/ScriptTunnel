@@ -20,7 +20,7 @@ HAProxy (frontend https_in) -----> SSL termination (yha.pem)
        -----> backend nginx_http (127.0.0.1:8081) ---> Nginx ---> /var/www/html
 ```
 
-Alur traffic ingress dimulai dari HAProxy yang bertindak sebagai single point entry port 80 dan 443. Pada port 443, HAProxy melakukan SSL termination menggunakan `/etc/haproxy/yha.pem` yang merupakan gabungan sertifikat dan kunci Xray (`config/haproxy/haproxy.cfg:42`). Berdasarkan ACL header `Upgrade: websocket` dan path yang dimulai `/vmess`, `/vless`, `/trojan`, `/shadowsocks`, atau `/ws`, traffic diteruskan ke backend `xray_ws` di `127.0.0.1:8080` (`config/haproxy/haproxy.cfg:57`). Traffic non-WebSocket (misalnya permintaan statis atau API) diteruskan ke backend `nginx_http` di `127.0.0.1:8081` (`config/haproxy/haproxy.cfg:60`).
+Alur traffic ingress dimulai dari HAProxy yang bertindak sebagai single point entry port 80 dan 443. Pada port 443, HAProxy melakukan SSL termination menggunakan `/etc/haproxy/yha.pem` yang merupakan gabungan sertifikat dan kunci Xray (`config/haproxy/haproxy.cfg:44`). Berdasarkan ACL header `Upgrade: websocket` dan path yang dimulai `/vmess`, `/vless`, `/trojan`, `/shadowsocks`, atau `/ws`, traffic diteruskan ke backend `xray_ws` di `127.0.0.1:8080` (`config/haproxy/haproxy.cfg:59`). Traffic non-WebSocket (misalnya permintaan statis atau API) diteruskan ke backend `nginx_http` di `127.0.0.1:8081` (`config/haproxy/haproxy.cfg:62`).
 
 Nginx bertindak sebagai reverse proxy yang meneruskan path WebSocket ke `127.0.0.1:8080` (`config/nginx/xray.conf:35`, `config/nginx/xray.conf:48`, `config/nginx/xray.conf:61`, `config/nginx/xray.conf:74`, `config/nginx/xray.conf:88`). Nginx juga menyajikan berkas statis dari `/var/www/html` (`config/nginx/xray.conf:30`).
 
@@ -28,7 +28,7 @@ Xray Core menerima traffic di port 80 dan 443 untuk masing-masing protokol, deng
 
 ## Multiplexing Port 80 dan 443 via HAProxy -> Nginx -> Xray Core
 
-Lapisan pertama, HAProxy, mengikat port 80 dan 443. `config/haproxy/haproxy.cfg:63-67` mendefinisikan frontend `http_in` yang melakukan redirect 301 ke HTTPS. `config/haproxy/haproxy.cfg:41-61` mendefinisikan frontend `https_in` yang memeriksa ACL `is_websocket` dan ACL path, lalu meneruskan ke `xray_ws` atau `nginx_http`.
+Lapisan pertama, HAProxy, mengikat port 80 dan 443. `config/haproxy/haproxy.cfg:65-69` mendefinisikan frontend `http_in` yang melakukan redirect 301 ke HTTPS. `config/haproxy/haproxy.cfg:43-63` mendefinisikan frontend `https_in` yang memeriksa ACL `is_websocket` dan ACL path, lalu meneruskan ke `xray_ws` atau `nginx_http`.
 
 Lapisan kedua, Nginx, memiliki konfigurasi site di `/etc/nginx/conf.d/xray.conf` (`zidstoretunnel.sh:685`). Blok `server` HTTPS di `config/nginx/xray.conf:10-113` menggunakan sertifikat `/etc/xray/xray.crt` dan kunci `/etc/xray/xray.key` (`config/nginx/xray.conf:16-17`), kemudian menetapkan location untuk setiap path protokol.
 
@@ -55,8 +55,8 @@ Lapisan ketiga, Xray Core, berjalan di `127.0.0.1:8080` dengan inbounds terpisah
 | Xray Trojan WS | 443 | TCP | Inbound Trojan dengan TLS | `config/xray/trojan.json:9` |
 | Xray Shadowsocks WS | 443 | TCP | Inbound Shadowsocks dengan TLS | `config/xray/shadowsocks.json:9` |
 | WebSocket proxy | 80/443 | TCP | Proksi Python ws.py | `systemd/ws.service:12` |
-| HAProxy | 80, 443 | TCP | SSL termination dan routing | `config/haproxy/haproxy.cfg:42`, `config/haproxy/haproxy.cfg:64` |
-| Nginx | 80, 443 | TCP | Reverse proxy backend xray_ws dan nginx_http | `config/haproxy/haproxy.cfg:73`, `config/haproxy/haproxy.cfg:79` |
+| HAProxy | 80, 443 | TCP | SSL termination dan routing | `config/haproxy/haproxy.cfg:44`, `config/haproxy/haproxy.cfg:66` |
+| Nginx | 80, 443 | TCP | Reverse proxy backend xray_ws dan nginx_http | `config/haproxy/haproxy.cfg:75`, `config/haproxy/haproxy.cfg:81` |
 | SlowDNS (DNSTT) | 5300 | UDP | Redirect dari PREROUTING | `zidstoretunnel.sh:744` |
 | DNSTT Server | 5300 | UDP | Listener SlowDNS | `systemd/dnstt-server.service:12` |
 | DNSTT Client | 88 | TCP/UDP | DoH ke 127.0.0.1:88 | `systemd/dnstt-client.service:12` |
@@ -64,15 +64,15 @@ Lapisan ketiga, Xray Core, berjalan di `127.0.0.1:8080` dengan inbounds terpisah
 | BadVPN | 7200 | UDP | Listen address lokal | `systemd/badvpn.service:9` |
 | BadVPN | 7300 | UDP | Listen address lokal | `systemd/badvpn.service:9` |
 | UDP Custom | 2100 | TCP/UDP | Listener UDP Custom | `config/udp-config.json:2` |
-| Xray Core | 8080 | TCP | Backend WebSocket Xray | `config/haproxy/haproxy.cfg:73` |
-| Nginx backend | 8081 | TCP | Backend Nginx HTTP | `config/haproxy/haproxy.cfg:79` |
+| Xray Core | 8080 | TCP | Backend WebSocket Xray | `config/haproxy/haproxy.cfg:75` |
+| Nginx backend | 8081 | TCP | Backend Nginx HTTP | `config/haproxy/haproxy.cfg:81` |
 
 ## Interaksi Antar Modul
 
 1. Client mengirim koneksi ke port 80 atau 443 VPS.
-2. HAProxy menerima koneksi, melakukan SSL termination (`config/haproxy/haproxy.cfg:42`), dan memeriksa ACL (`config/haproxy/haproxy.cfg:49-54`).
-3. Jika traffic adalah WebSocket dengan path yang cocok, HAProxy meneruskan ke `127.0.0.1:8080` (`config/haproxy/haproxy.cfg:57`). Port 8080 adalah Xray Core yang berjalan sebagai unit `vmess@config.service` (atau vless, trojan, shadowsocks, tergantung path).
-4. Jika traffic bukan WebSocket, HAProxy meneruskan ke `127.0.0.1:8081` (`config/haproxy/haproxy.cfg:60`). Port 8081 adalah Nginx yang melayani berkas statis dan reverse proxy tambahan.
+2. HAProxy menerima koneksi, melakukan SSL termination (`config/haproxy/haproxy.cfg:44`), dan memeriksa ACL (`config/haproxy/haproxy.cfg:51-56`).
+3. Jika traffic adalah WebSocket dengan path yang cocok, HAProxy meneruskan ke `127.0.0.1:8080` (`config/haproxy/haproxy.cfg:59`). Port 8080 adalah Xray Core yang berjalan sebagai unit `vmess@config.service` (atau vless, trojan, shadowsocks, tergantung path).
+4. Jika traffic bukan WebSocket, HAProxy meneruskan ke `127.0.0.1:8081` (`config/haproxy/haproxy.cfg:62`). Port 8081 adalah Nginx yang melayani berkas statis dan reverse proxy tambahan.
 5. Nginx meneruskan path WebSocket ke `127.0.0.1:8080` (`config/nginx/xray.conf:35`) dengan header yang diperlukan.
 6. Xray Core memverifikasi payload sesuai protokol dan meneruskan trafik keluar ke internet melalui outbound `freedom` (`config/xray/vmess.json:63-66`).
 7. SlowDNS menggunakan DNSTT server di port 5300 (`systemd/dnstt-server.service:12`) dengan redirect iptables PREROUTING UDP 53 -> 5300 (`zidstoretunnel.sh:744`). Client mengirim DNS query ke NS domain, DNSTT server meneruskan ke `127.0.0.1:443`, yang kemudian diurus oleh Xray Trojan inbound atau layanan lain.
@@ -84,13 +84,13 @@ Lapisan ketiga, Xray Core, berjalan di `127.0.0.1:8080` dengan inbounds terpisah
 
 | Berkas:Baris | Fungsi |
 |---|---|
-| `config/haproxy/haproxy.cfg:41` | Frontend `https_in` |
-| `config/haproxy/haproxy.cfg:42` | Bind `*:443 ssl crt /etc/haproxy/yha.pem` |
-| `config/haproxy/haproxy.cfg:49` | ACL `is_websocket` |
-| `config/haproxy/haproxy.cfg:57` | `use_backend xray_ws if is_websocket` |
-| `config/haproxy/haproxy.cfg:60` | `default_backend nginx_http` |
-| `config/haproxy/haproxy.cfg:73` | Backend `xray_ws` `127.0.0.1:8080` |
-| `config/haproxy/haproxy.cfg:79` | Backend `nginx_http` `127.0.0.1:8081` |
+| `config/haproxy/haproxy.cfg:43` | Frontend `https_in` |
+| `config/haproxy/haproxy.cfg:44` | Bind `*:443 ssl crt /etc/haproxy/yha.pem` |
+| `config/haproxy/haproxy.cfg:51` | ACL `is_websocket` |
+| `config/haproxy/haproxy.cfg:59` | `use_backend xray_ws if is_websocket` |
+| `config/haproxy/haproxy.cfg:62` | `default_backend nginx_http` |
+| `config/haproxy/haproxy.cfg:75` | Backend `xray_ws` `127.0.0.1:8080` |
+| `config/haproxy/haproxy.cfg:81` | Backend `nginx_http` `127.0.0.1:8081` |
 | `config/nginx/xray.conf:34` | Location `/vmess` |
 | `config/nginx/xray.conf:47` | Location `/vless` |
 | `config/nginx/xray.conf:60` | Location `/trojan` |

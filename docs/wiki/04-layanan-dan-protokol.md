@@ -204,19 +204,21 @@ HAProxy adalah lapisan pertama yang menerima koneksi publik. Bagian penting:
 
 | Aspek | Nilai | Rujukan |
 |---|---|---|
-| SSL bind | `bind *:443 ssl crt /etc/haproxy/yha.pem alpn h2,http/1.1` | `config/haproxy/haproxy.cfg:42` |
-| HTTP bind | `bind *:80` dengan redirect 301 ke HTTPS | `config/haproxy/haproxy.cfg:64-67` |
-| Mode default | `mode tcp` | `config/haproxy/haproxy.cfg:18` |
-| Timeout | connect 5000, client 50000, server 50000 | `config/haproxy/haproxy.cfg:21-23` |
+| SSL bind | `bind *:443 ssl crt /etc/haproxy/yha.pem alpn h2,http/1.1` | `config/haproxy/haproxy.cfg:44` |
+| HTTP bind | `bind *:80` dengan redirect 301 ke HTTPS | `config/haproxy/haproxy.cfg:66-69` |
+| Mode default | `mode tcp` | `config/haproxy/haproxy.cfg:19` |
+| Timeout | connect 5000, client 50000, server 50000 | `config/haproxy/haproxy.cfg:23-25` |
 | Max connection | `maxconn 4096` | `config/haproxy/haproxy.cfg:10` |
-| Cipher TLS | 9 cipher TLS 1.2/1.3 | `config/haproxy/haproxy.cfg:12` |
-| Cipher suite | `TLS_AES_128_GCM_SHA256`, `TLS_AES_256_GCM_SHA384`, `TLS_CHACHA20_POLY1305_SHA256` | `config/haproxy/haproxy.cfg:13` |
-| Minimum TLS | `ssl-min-ver TLSv1.2 no-tls-tickets` | `config/haproxy/haproxy.cfg:14` |
-| Health check | `option httpchk GET /health` | `config/haproxy/haproxy.cfg:72` |
-| Backend Xray | `server xray1 127.0.0.1:8080 check inter 2000 rise 2 fall 3` | `config/haproxy/haproxy.cfg:73` |
-| Backend Nginx | `server nginx1 127.0.0.1:8081 check inter 2000 rise 2 fall 3` | `config/haproxy/haproxy.cfg:79` |
+| Buffer size | `tune.bufsize 32768` | `config/haproxy/haproxy.cfg:11` |
+| Splice auto | `option splice-auto` | `config/haproxy/haproxy.cfg:22` |
+| Cipher TLS | 9 cipher TLS 1.2/1.3 | `config/haproxy/haproxy.cfg:13` |
+| Cipher suite | `TLS_AES_128_GCM_SHA256`, `TLS_AES_256_GCM_SHA384`, `TLS_CHACHA20_POLY1305_SHA256` | `config/haproxy/haproxy.cfg:14` |
+| Minimum TLS | `ssl-min-ver TLSv1.2 no-tls-tickets` | `config/haproxy/haproxy.cfg:15` |
+| Health check | `option httpchk GET /health` | `config/haproxy/haproxy.cfg:74` |
+| Backend Xray | `server xray1 127.0.0.1:8080 inter 2000 rise 2 fall 3` | `config/haproxy/haproxy.cfg:75` |
+| Backend Nginx | `server nginx1 127.0.0.1:8081 inter 2000 rise 2 fall 3` | `config/haproxy/haproxy.cfg:81` |
 
-Frontend TCP opsional untuk VMess, VLESS, Trojan, dan Shadowsocks pada port 8443 sampai 8446 ada dalam bentuk ter-comment (`config/haproxy/haproxy.cfg:81-116`).
+Frontend TCP opsional untuk VMess, VLESS, Trojan, dan Shadowsocks pada port 8443 sampai 8446 ada dalam bentuk ter-comment (`config/haproxy/haproxy.cfg:83-118`).
 
 ## Nginx
 
@@ -267,6 +269,6 @@ Dropbear replaces OpenSSH as the lightweight SSH server. Konfigurasi di `/etc/de
 | `zidstoretunnel.sh:1107-1125` | Unit udp.service installer |
 | `zidstoretunnel.sh:1161-1179` | Unit badvpn.service installer |
 | `zidstoretunnel.sh:1098` | Pembuatan /tmp/ws-ips |
-| `config/haproxy/haproxy.cfg:49-57` | ACL dan routing WebSocket |
+| `config/haproxy/haproxy.cfg:51-59` | ACL dan routing WebSocket |
 | `config/nginx/nginx.conf:34-35` | Rate limiting zone |
 | `config/nginx/xray.conf:25-27` | Header keamanan |

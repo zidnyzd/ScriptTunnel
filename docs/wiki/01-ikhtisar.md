@@ -40,7 +40,7 @@ create_service "vmess" "ZidStore Tunnel Xray Instance" "/usr/local/bin/xray run 
 
 ### Multiplexing HAProxy
 
-HAProxy menerima koneksi port 80 dan 443, menerapkan SSL termination, lalu meneruskan traffic ke backend Nginx atau Xray WebSocket berdasarkan ACL. Konfigurasi `config/haproxy/haproxy.cfg:41` mendefinisikan frontend `https_in` untuk port 443 dengan `crt /etc/haproxy/yha.pem`. `config/haproxy/haproxy.cfg:49` mendefinisikan ACL untuk upgrade WebSocket, `config/haproxy/haproxy.cfg:50-54` mendefinisikan ACL path untuk vmess, vless, trojan, dan shadowsocks, `config/haproxy/haproxy.cfg:57` meneruskan ke backend xray_ws.
+HAProxy menerima koneksi port 80 dan 443, menerapkan SSL termination, lalu meneruskan traffic ke backend Nginx atau Xray WebSocket berdasarkan ACL. Konfigurasi `config/haproxy/haproxy.cfg:43` mendefinisikan frontend `https_in` untuk port 443 dengan `crt /etc/haproxy/yha.pem`. `config/haproxy/haproxy.cfg:51` mendefinisikan ACL untuk upgrade WebSocket, `config/haproxy/haproxy.cfg:52-56` mendefinisikan ACL path untuk vmess, vless, trojan, dan shadowsocks, `config/haproxy/haproxy.cfg:59` meneruskan ke backend xray_ws.
 
 ### Proteksi Lisensi
 
@@ -71,7 +71,7 @@ Lisensi dicek sebelum apa pun yang dilakukan instalasi. `zidstoretunnel.sh:60-65
 | `zidstoretunnel.sh` | `zidstoretunnel.sh:124-127` input domain |
 | `zidstoretunnel.sh` | `zidstoretunnel.sh:130-136` verifikasi DNS A record |
 | `zidstoretunnel.sh` | `zidstoretunnel.sh:762-770` konfigurasi sysctl ip_forward |
-| `config/haproxy/haproxy.cfg` | `config/haproxy/haproxy.cfg:41-61` frontend SSL termination |
+| `config/haproxy/haproxy.cfg` | `config/haproxy/haproxy.cfg:43-63` frontend SSL termination |
 | `config/nginx/xray.conf` | `config/nginx/xray.conf:33-98` location proxy Xray WebSocket |
 | `config/xray/vmess.json` | `config/xray/vmess.json:8-28` inbound VMess port 80 |
 | `config/xray/vless.json` | `config/xray/vless.json:8-28` inbound VLESS port 80 |
