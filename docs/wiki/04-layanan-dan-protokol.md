@@ -2,7 +2,7 @@
 
 ## Xray Core
 
-Xray Core diinstal melalui skrip resmi XTLS (`zidstoretunnel.sh:1203-1254`) dengan fallback ke biner tetap `xray.linux.64bit` jika instalasi resmi gagal. Kedua jalur unduhan memakai berkas sementara dan verifikasi SHA256 terhadap manifest `checksums.txt` sebelum eksekusi. Setiap protokol berjalan sebagai instance systemd terpisah yang menunjuk ke direktori konfigurasi masing-masing.
+Xray Core diinstal melalui skrip resmi XTLS (`zidstoretunnel.sh:1205-1256`) dengan fallback ke biner tetap `xray.linux.64bit` jika instalasi resmi gagal. Kedua jalur unduhan memakai berkas sementara dan verifikasi SHA256 terhadap manifest `checksums.txt` sebelum eksekusi. Setiap protokol berjalan sebagai instance systemd terpisah yang menunjuk ke direktori konfigurasi masing-masing.
 
 ### VMess
 
@@ -11,7 +11,7 @@ Xray Core diinstal melalui skrip resmi XTLS (`zidstoretunnel.sh:1203-1254`) deng
 - Port 80 tanpa TLS, `network: ws`, `path: /vmess` (`config/xray/vmess.json:8-28`).
 - Port 443 dengan TLS, `network: ws`, `path: /vmess` (`config/xray/vmess.json:30-60`).
 
-Konfigurasi klien menggunakan UUID `1d1c1d94-6987-4658-a4dc-8821a30fe7e0` dengan `alterId: 0` (`config/xray/vmess.json:14-15`). Skrip instalasi mengganti UUID ini dengan UUID acak yang di-generate dari `/proc/sys/kernel/random/uuid` untuk seluruh protokol (`zidstoretunnel.sh:1559-1566`).
+Konfigurasi klien menggunakan UUID `1d1c1d94-6987-4658-a4dc-8821a30fe7e0` dengan `alterId: 0` (`config/xray/vmess.json:14-15`). Skrip instalasi mengganti UUID ini dengan UUID acak yang di-generate dari `/proc/sys/kernel/random/uuid` untuk seluruh protokol (`zidstoretunnel.sh:1561-1568`).
 
 Outbound adalah `freedom` (`config/xray/vmess.json:62-67`).
 
@@ -53,36 +53,48 @@ Template `%i` memungkinkan instance tambahan, misalnya `vmess@config2.service` d
 
 ## SlowDNS (DNSTT)
 
-### Mekanisme
+### Server
 
-SlowDNS adalah teknik tunneling yang menyamarkan traffic sebagai query DNS. Di ZidStore Tunnel, SlowDNS diimplementasikan dengan DNSTT (DNS tunnel) yang memiliki dua komponen: server dan client.
+Biner resmi bamsoftware DNSTT (rilis 2026-05-01, amd64 statis) diunduh dari fodder sebagai `dnstt-server.linux.amd64` dan `dnstt-client.linux.amd64`, dengan verifikasi sha256 terhadap manifest (`zidstoretunnel.sh:1700-1716`). Biner dipasang di `/etc/slowdns/dnstt-server` dan `/etc/slowdns/dnstt-client`. Client (`dnstt-client`) adalah alat uji, tidak ada unit layanan yang dipasang pada fase 1.
 
-- Server menerima query DNS masuk di port 5300 UDP dan meneruskan payload ke `127.0.0.1:443` (`systemd/dnstt-server.service:12`).
-- Client mengirim query melalui DNS-over-HTTPS (DoH) ke `https://cloudflare-dns.com/dns-query` dan meneruskan ke `127.0.0.1:88` (`systemd/dnstt-client.service:12`).
+Unit `dnstt-server` (template repo `systemd/dnstt-server.service`, ditulis installer pada `/etc/systemd/system/dnstt-server.service`):
 
-Kunci privat server berada di `/etc/slowdns/server.key` dan kunci publik di `/etc/slowdns/server.pub` (`systemd/dnstt-server.service:12`, `systemd/dnstt-client.service:12`).
+```
+ExecStart=/etc/slowdns/dnstt-server -udp 0.0.0.0:5300 -privkey-file /etc/slowdns/server.key <domain> 127.0.0.1:22
+```
 
-### Konfigurasi DoH
+Unit berjalan sebagai `User=root`, dengan `CapabilityBoundingSet=CAP_NET_ADMIN CAP_NET_BIND_SERVICE`, `AmbientCapabilities=CAP_NET_ADMIN CAP_NET_BIND_SERVICE`, `NoNewPrivileges=true`, dan `Restart=on-failure` (`systemd/dnstt-server.service:7-14`). Forward server adalah `127.0.0.1:22` (SSH), bukan 443, karena HAProxy 443 menuntut TLS.
 
-Flag `-doh` pada `dnstt-client` menunjuk ke endpoint DoH Cloudflare (`systemd/dnstt-client.service:12`). Ini memastikan query tunneling tidak terkunci pada port 53 biasa di jaringan lokal.
+### Kunci
 
-### Integrasi Cloudflare NS
-
-Domain NS untuk SlowDNS ditentukan oleh variabel `domain_ns` yang didokumentasikan sebagai default `dnstt.me` (`README.md:64`). Domain NS ini harus didelegasikan ke Cloudflare sebagai NS record sehingga query untuk subdomain acak diarahkan ke server SlowDNS. Delegasi Cloudflare API memerlukan `cf_id` dan `cf_key` (`README.md:66-67`).
-
-Variabel `domain_ns` dan `cf_id`/`cf_key` ini tidak didefinisikan di `zidstoretunnel.sh`. Yang ada di skrip hanyalah `timezone` (`zidstoretunnel.sh:496`). Ini berarti konfigurasi SlowDNS pada repo ini berasal dari sisi server API atau aset yang diunduh, bukan dari variabel yang bisa diedit langsung di skrip utama.
+Direktori `/etc/slowdns` dibuat dengan mode 700 (`zidstoretunnel.sh:1696-1697`). Kunci dibuat dengan `-gen-key` bila belum ada (`zidstoretunnel.sh:1721-1723`), idempoten (tidak di-regenerate pada re-run). Izin: `/etc/slowdns/server.key` mode 600, `/etc/slowdns/server.pub` mode 644 (`zidstoretunnel.sh:1724-1725`). Pubkey aman dibagikan ke pelanggan.
 
 ### Redirect iptables
 
-Query DNS ke port 53 diarahkan ke port 5300 melalui aturan PREROUTING (`zidstoretunnel.sh:1161`):
+Query DNS ke port 53 diarahkan ke port 5300 melalui aturan PREROUTING yang idempoten sejak v1.0.3 (`zidstoretunnel.sh:1163`):
 
 ```
 iptables -t nat -A PREROUTING -i $interface -p udp -m udp --dport 53 -j REDIRECT --to-ports 5300
 ```
 
-### Unit systemd
+### Domain per VPS
 
-Kedua unit berjalan sebagai `User=root` dengan `NoNewPrivileges=true`, `CapabilityBoundingSet=CAP_NET_ADMIN CAP_NET_BIND_SERVICE`, dan `Restart=on-failure` (`systemd/dnstt-server.service:7-13`, `systemd/dnstt-client.service:7-13`).
+Domain diambil berurutan: unit existing > `/etc/slowdns/domain` > env `DNSTT_DOMAIN` > otomatis via API (`zidstoretunnel.sh:1726-1750`). Sumber otomatis API dipanggil bila ketiga sumber sebelumnya kosong: POST /api/slowdns/register dengan domain install, header X-API-Key, fail-open. Hasil ditulis ke `/etc/slowdns/domain`. Konvensi per VPS: `<sub>.zdnstt.web.id` dengan nameserver `ns-<sub>.zdnstt.web.id`, di mana `<sub>` adalah label pertama domain install. Otomasi Cloudflare (delegasi NS) aktif sejak fase 2 via API control plane (`/api/slowdns/register`); pada fase 1 delegasi dilakukan manual. Bila domain tidak tersedia, blok SlowDNS dilewati dengan telemetri `slowdns_skipped` (`zidstoretunnel.sh:1785-1788`).
+
+### Telemetri dan sifat fail-open
+
+Telemetri `slowdns_ready` dikirim bila aktivasi berhasil, `slowdns_skipped` bila dilewati (`zidstoretunnel.sh:1779`, `zidstoretunnel.sh:1782`, `zidstoretunnel.sh:1786`). `slowdns_ready` kini menambah field "source" (unit/file/env/api) yang menunjukkan sumber domain (`zidstoretunnel.sh:1779`, `zidstoretunnel.sh:1782`). Seluruh blok fail-open: kegagalan unduh/verifikasi/aktivasi hanya menghasilkan peringatan, tidak menghentikan instalasi.
+
+### dnstt-client (alat uji)
+
+Unit `dnstt-client.service` tidak dipasang oleh installer fase 1; biner `/etc/slowdns/dnstt-client` tersedia untuk pengujian. Contoh uji koneksi:
+
+```
+/etc/slowdns/dnstt-client -udp <server-ip>:5300 --pubkey-file /etc/slowdns/server.pub <domain> 127.0.0.1:PORT
+/etc/slowdns/dnstt-client -doh https://cloudflare-dns.com/dns-query --pubkey-file /etc/slowdns/server.pub <domain> 127.0.0.1:PORT
+```
+
+Catatan: koneksi yang hanya membaca tanpa pernah mengirim byte tidak menerima data sampai byte pertama dikirim (protokol nyata selalu mengirim dulu). Query polos ke domain tunnel dijawab NXDOMAIN oleh dnstt-server; ini NORMAL, bukan kerusakan.
 
 ## BadVPN UDPGW
 
@@ -94,23 +106,23 @@ ExecStart=/usr/bin/badvpn --listen-addr 127.0.0.1:7100 --listen-addr 127.0.0.1:7
 
 Rujukan: `systemd/badvpn.service:9`.
 
-Skrip installer membuat unit dengan tambahan `--max-connections-for-client 64` dan `--client-socket-sndbuf 4194304` (`zidstoretunnel.sh:1535`), sedangkan berkas repo `systemd/badvpn.service:9` tidak memuat kedua flag tersebut. Unit di repo juga tidak menyertakan capability bounding set, sementara unit hasil installer berjalan sebagai root dengan `NoNewPrivileges=true` (`zidstoretunnel.sh:1532-1534`).
+Skrip installer membuat unit dengan tambahan `--max-connections-for-client 64` dan `--client-socket-sndbuf 4194304` (`zidstoretunnel.sh:1537`), sedangkan berkas repo `systemd/badvpn.service:9` tidak memuat kedua flag tersebut. Unit di repo juga tidak menyertakan capability bounding set, sementara unit hasil installer berjalan sebagai root dengan `NoNewPrivileges=true` (`zidstoretunnel.sh:1534-1536`).
 
-Pembuatan unit BadVPN di `zidstoretunnel.sh:1526` ditulis dengan heredoc quoted (`<<'EOF'`), sehingga variabel tidak di-expand, sedangkan unit lain menggunakan heredoc unquoted.
+Pembuatan unit BadVPN di `zidstoretunnel.sh:1528` ditulis dengan heredoc quoted (`<<'EOF'`), sehingga variabel tidak di-expand, sedangkan unit lain menggunakan heredoc unquoted.
 
-Buffer socket UDP dinaikkan ke 8MB untuk BadVPN (`zidstoretunnel.sh:1185-1193`), karena BadVPN sering gagal dengan pesan "out of UDP buffer" pada buffer default.
+Buffer socket UDP dinaikkan ke 8MB untuk BadVPN (`zidstoretunnel.sh:1187-1195`), karena BadVPN sering gagal dengan pesan "out of UDP buffer" pada buffer default.
 
 ## WebSocket Proxy (ws.py)
 
-Skrip Python `ws.py` diunduh ke `/usr/bin/ws.py` (`zidstoretunnel.sh:1047-1053`) dan dijalankan sebagai unit `ws.service`:
+Skrip Python `ws.py` diunduh ke `/usr/bin/ws.py` (`zidstoretunnel.sh:1049-1055`) dan dijalankan sebagai unit `ws.service`:
 
 ```
 ExecStart=/usr/bin/python3 -O /usr/bin/ws.py
 ```
 
-Rujukan: `systemd/ws.service:12`, dan identik di `zidstoretunnel.sh:1455`.
+Rujukan: `systemd/ws.service:12`, dan identik di `zidstoretunnel.sh:1457`.
 
-Unit ini berjalan sebagai `User=root` dengan `CapabilityBoundingSet=CAP_NET_ADMIN CAP_NET_BIND_SERVICE` (`systemd/ws.service:8-11`). Skrip installer membuat direktori `/tmp/ws-ips` sebelum menjalankan service (`zidstoretunnel.sh:1454`), yang dipakai untuk korelasi IP antar koneksi.
+Unit ini berjalan sebagai `User=root` dengan `CapabilityBoundingSet=CAP_NET_ADMIN CAP_NET_BIND_SERVICE` (`systemd/ws.service:8-11`). Skrip installer membuat direktori `/tmp/ws-ips` sebelum menjalankan service (`zidstoretunnel.sh:1456`), yang dipakai untuk korelasi IP antar koneksi.
 
 Perilaku yang didokumentasikan:
 
@@ -122,9 +134,9 @@ Nginx sudah menyiapkan location `/ws` dengan header upgrade WebSocket dan timeou
 
 ## UDP Custom
 
-UDP Custom adalah biner tunneling UDP+SOCKS5 yang berjalan di `/usr/bin/udp-custom-linux-amd64` (`zidstoretunnel.sh:1123-1128`, `zidstoretunnel.sh:515`).
+UDP Custom adalah biner tunneling UDP+SOCKS5 yang berjalan di `/usr/bin/udp-custom-linux-amd64` (`zidstoretunnel.sh:1125-1130`, `zidstoretunnel.sh:515`).
 
-Konfigurasi runtime `/usr/bin/config.json` dibuat oleh skrip (`zidstoretunnel.sh:1302-1312`) dan identik dengan `config/udp-config.json`:
+Konfigurasi runtime `/usr/bin/config.json` dibuat oleh skrip (`zidstoretunnel.sh:1304-1314`) dan identik dengan `config/udp-config.json`:
 
 ```
 {
@@ -145,7 +157,7 @@ Unit systemd:
 ExecStart=/usr/bin/udp server -exclude 7300,7200,7100,323,10008,10004 /usr/bin/config.json
 ```
 
-Rujukan: `systemd/udp.service:8`, identik di `zidstoretunnel.sh:1473`.
+Rujukan: `systemd/udp.service:8`, identik di `zidstoretunnel.sh:1475`.
 
 Flag `-exclude` mencegah daemon membindingi port yang sudah dipakai layanan lain: 7300/7200/7100 (BadVPN), 323 (chrony NTP), serta 10008 dan 10004.
 
@@ -199,7 +211,7 @@ Konfigurasi site `config/nginx/xray.conf`:
 
 ## Dropbear
 
-Dropbear replaces OpenSSH as the lightweight SSH server. Konfigurasi di `/etc/default/dropbear` diunduh dari server API (`zidstoretunnel.sh:975-990`), file init di `/etc/init.d/dropbear`, dan host key DSA di `/etc/dropbear/dropbear_dss_host_key`. Unit dropbear bawaan sistem dihapus (`zidstoretunnel.sh:1429-1431`) dan digantikan oleh SysV init script.
+Dropbear replaces OpenSSH as the lightweight SSH server. Konfigurasi di `/etc/default/dropbear` diunduh dari server API (`zidstoretunnel.sh:977-992`), file init di `/etc/init.d/dropbear`, dan host key DSA di `/etc/dropbear/dropbear_dss_host_key`. Unit dropbear bawaan sistem dihapus (`zidstoretunnel.sh:1431-1433`) dan digantikan oleh SysV init script.
 
 ## Manajemen Layanan
 
@@ -215,11 +227,14 @@ Dropbear replaces OpenSSH as the lightweight SSH server. Konfigurasi di `/etc/de
 | `config/xray/vless.json:18` | `decryption: none` |
 | `config/xray/trojan.json:14` | Password Trojan |
 | `config/xray/shadowsocks.json:14` | Metode `2022-blake3-aes-128-gcm` |
-| `zidstoretunnel.sh:1559-1566` | Rotasi UUID semua protokol |
-| `zidstoretunnel.sh:1302-1312` | Pembuatan /usr/bin/config.json |
-| `zidstoretunnel.sh:1465-1483` | Unit udp.service installer |
-| `zidstoretunnel.sh:1523-1543` | Unit badvpn.service installer |
-| `zidstoretunnel.sh:1454` | Pembuatan /tmp/ws-ips |
+| `zidstoretunnel.sh:1561-1568` | Rotasi UUID semua protokol |
+| `zidstoretunnel.sh:1693-1790` | Blok SlowDNS/DNSTT fase 1 |
+| `systemd/dnstt-server.service:13` | ExecStart dnstt-server (UDP 5300, forward 127.0.0.1:22) |
+| `systemd/dnstt-client.service:13` | ExecStart dnstt-client (alat uji, unit tidak dipasang fase 1) |
+| `zidstoretunnel.sh:1304-1314` | Pembuatan /usr/bin/config.json |
+| `zidstoretunnel.sh:1467-1485` | Unit udp.service installer |
+| `zidstoretunnel.sh:1525-1545` | Unit badvpn.service installer |
+| `zidstoretunnel.sh:1456` | Pembuatan /tmp/ws-ips |
 | `config/haproxy/haproxy.cfg:51-59` | ACL dan routing WebSocket |
 | `config/nginx/nginx.conf:34-35` | Rate limiting zone |
 | `config/nginx/xray.conf:25-27` | Header keamanan |

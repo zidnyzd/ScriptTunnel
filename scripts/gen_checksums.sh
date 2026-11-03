@@ -56,7 +56,7 @@ printf '%s  xray.linux.64bit\n' "$HASH" >> "$RESULT"
 
 # Biner fodder dari server API ZidStore (path yang sama dengan installer)
 FODDER_BASE="https://zds.web.id/resources/fodder"
-for fodder in udp-custom-linux-amd64 badvpn sqlite3-prebuilt.tar.gz; do
+for fodder in udp-custom-linux-amd64 badvpn sqlite3-prebuilt.tar.gz dnstt-server.linux.amd64 dnstt-client.linux.amd64; do
     curl -fsSL -o "$TMPDIR/$fodder" "$FODDER_BASE/$fodder"
     HASH=$(sha256sum "$TMPDIR/$fodder" | awk '{print $1}')
     printf '%s  %s\n' "$HASH" "$fodder" >> "$RESULT"

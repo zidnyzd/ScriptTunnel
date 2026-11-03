@@ -1,6 +1,7 @@
+# Fase 1 v1.0.4 tidak memasang unit ini; biner dnstt-client dipasang di /etc/slowdns untuk keperluan pengujian.
 [Unit]
 Description=ZidStore Tunnel SlowDNS Client
-Documentation=https://github.com/your-repo/zidstoretunnel
+Documentation=https://t.me/zidstoretunnel
 After=network.target nss-lookup.target
 
 [Service]

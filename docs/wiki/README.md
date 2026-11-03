@@ -14,6 +14,7 @@ Ringkasan satu paragraf: ZidStore Tunnel adalah skrip instalasi otomatis berbasi
 | `05-build-dan-obfuscasi.md` | Pipeline build, kompresi, chunking, self-extracting loader |
 | `06-konfigurasi-dan-jaringan.md` | Variabel default, iptables, tuning kernel, cron |
 | `07-jebakan-dan-troubleshooting.md` | Gejala, penyebab teknis, cara mengatasi |
+| `08-slowdns-ops.md` | Operasional SlowDNS/DNSTT: aktivasi, kunci, verifikasi, uji |
 
 ## Jalur Baca yang Disarankan
 
@@ -36,6 +37,7 @@ Ringkasan satu paragraf: ZidStore Tunnel adalah skrip instalasi otomatis berbasi
 | Konfigurasi VMess/VLESS/Trojan/Shadowsocks | `04-layanan-dan-protokol.md` |
 | WebSocket path dan gRPC service name | `04-layanan-dan-protokol.md` |
 | SlowDNS DNSTT dan delegasi NS Cloudflare | `04-layanan-dan-protokol.md` |
+| Operasional SlowDNS: kunci, verifikasi, uji konektivitas | `08-slowdns-ops.md` |
 | BadVPN UDPGW port 7100/7200/7300 | `04-layanan-dan-protokol.md` |
 | Skrip Python ws.py dan PROXY protocol v1 | `04-layanan-dan-protokol.md` |
 | UDP Custom biner dan config.json | `04-layanan-dan-protokol.md` |

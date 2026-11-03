@@ -5,6 +5,13 @@ All notable changes to ZidStore Tunnel will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+### Added
+- SlowDNS/DNSTT fase 1: biner resmi (bamsoftware) amd64 dari fodder dengan verifikasi sha256, kunci otomatis di /etc/slowdns (server.key 600, server.pub 644), unit dnstt-server dengan forward 127.0.0.1:22 (redirect UDP 53 ke 5300 sudah ada sejak v1.0.3), aktivasi via /etc/slowdns/domain atau env DNSTT_DOMAIN, telemetri slowdns_ready/slowdns_skipped, idempoten untuk upgrade.
+- Installer: otomasi subdomain SlowDNS via API saat instalasi (POST /api/slowdns/register, fallback ke-4, fail-open, telemetri source).
+- Distribusi domain/pubkey SlowDNS di output akun (addssh/apicreate/trial, dashboard dan menu menampilkan domain; teks versi V1.0.3 LTS).
+- Fitur ubah domain DNSTT via menu (sinkron Cloudflare otomatis).
+
 ## [1.0.3] - 2026-11-03
 
 ### Added

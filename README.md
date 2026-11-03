@@ -13,7 +13,7 @@ A comprehensive VPN/Tunnel installation script for Ubuntu/Debian servers. This s
 - **Nginx**: Reverse proxy with SSL
 - **Dropbear**: Lightweight SSH server
 - **SSL Certificates**: Automatic Let's Encrypt via acme.sh
-- **Cloudflare DNS**: Automatic NS record creation for SlowDNS
+- **Cloudflare DNS**: NS record setup for SlowDNS
 - **Systemd Services**: All components managed as services
 - **Swap**: Automatic 2GB swap file creation
 - **BBR**: TCP BBR congestion control
@@ -60,7 +60,7 @@ The script uses the following default configuration (can be modified in the scri
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `domain_ns` | `dnstt.me` | Domain for SlowDNS NS records |
+| SlowDNS domain | per VPS | Tunnel domain from `/etc/slowdns/domain` or `DNSTT_DOMAIN` env |
 | `timezone` | `Asia/Jakarta` | Server timezone |
 | `cf_id` | Your Cloudflare email | Cloudflare API email |
 | `cf_key` | Your Cloudflare API key | Cloudflare Global API Key |
@@ -82,7 +82,7 @@ The script uses the following default configuration (can be modified in the scri
 | BadVPN | 7100, 7200, 7300 |
 | UDP Custom | 2100 |
 | SlowDNS | 5300 (UDP) |
-| DNSTT Client | 88 (DoH) |
+
 
 ## Post-Installation
 
@@ -96,14 +96,14 @@ After installation completes, the server will prompt for a reboot. Once rebooted
 ```bash
 # Check service status
 systemctl status vmess@config vless@config trojan@config shadowsocks@config
-systemctl status haproxy nginx ws udp badvpn dnstt-server dnstt-client
+systemctl status haproxy nginx ws udp badvpn dnstt-server
 
 # View logs
 journalctl -u vmess@config -f
 journalctl -u xray -f
 
 # Restart all services
-systemctl restart vmess@config vless@config trojan@config shadowsocks@config haproxy nginx ws udp badvpn dnstt-server dnstt-client
+systemctl restart vmess@config vless@config trojan@config shadowsocks@config haproxy nginx ws udp badvpn dnstt-server
 ```
 
 ## File Structure
@@ -136,7 +136,7 @@ systemctl restart vmess@config vless@config trojan@config shadowsocks@config hap
 To customize the installation, edit the variables at the top of `zidstoretunnel.sh`:
 
 ```bash
-domain_ns="your-ns-domain.com"
+# SlowDNS domain: set via /etc/slowdns/domain or DNSTT_DOMAIN env
 timezone="Your/Timezone"
 cf_id="your@email.com"
 cf_key="your-cloudflare-api-key"
