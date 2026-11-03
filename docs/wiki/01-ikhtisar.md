@@ -2,7 +2,7 @@
 
 ## Apa Itu ZidStore Tunnel
 
-ZidStore Tunnel adalah proyek perangkat lunak open-source berbasis skrip Bash yang mendistribusikan server VPN multi-protokol dalam satu deploy. Proyek ini menggabungkan empat lapisan utama: lapisan ingress (HAProxy, Nginx), lapisan proxy aplikasi (Xray Core, OpenVPN, SlowDNS, WebSocket, BadVPN, UDP Custom), lapisan manajemen layanan (unit systemd, scripts/manage.sh), dan lapisan keamanan (validasi lisensi berbasis IP, isolasi konfigurasi, iptables, sysctl).
+ZidStore Tunnel adalah proyek perangkat lunak open-source berbasis skrip Bash yang mendistribusikan server VPN multi-protokol dalam satu deploy. Proyek ini menggabungkan empat lapisan utama: lapisan ingress (HAProxy, Nginx), lapisan proxy aplikasi (Xray Core, SlowDNS, WebSocket, BadVPN, UDP Custom), lapisan manajemen layanan (unit systemd, scripts/manage.sh), dan lapisan keamanan (validasi lisensi berbasis IP, isolasi konfigurasi, iptables, sysctl).
 
 Skrip utama berada di `zidstoretunnel.sh`, builder di `build.sh`, wrapper bootstrap di `install.sh`, dan script verifikasi struktur di `test_structure.sh`.
 
@@ -15,7 +15,6 @@ Tujuan proyek ini adalah menjawab masalah deployment tunnel VPN multi-protokol d
 Scope proyek ini mencakup:
 
 - Instalasi Xray Core dengan inbounds VMess, VLESS, Trojan, dan Shadowsocks.
-- Instalasi OpenVPN dengan profil TCP, UDP, dan SSL.
 - Instalasi SlowDNS menggunakan DNSTT server dan client.
 - Instalasi WebSocket proxy Python `ws.py`.
 - Instalasi BadVPN UDPGW pada port 7100, 7200, 7300.
@@ -32,7 +31,7 @@ Scope proyek ini mencakup:
 
 Setiap komponen ditempatkan sebagai unit systemd terpisah. VMess, VLESS, Trojan, dan Shadowsocks menggunakan template instance `vmess@config.service`, `vless@config.service`, `trojan@config.service`, `shadowsocks@config.service`. Setiap instance membaca file konfigurasi `config.json` di direktori masing-masing `/etc/xray/vmess`, `/etc/xray/vless`, `/etc/xray/trojan`, `/etc/xray/shadowsocks`.
 
-Contoh di `zidstoretunnel.sh:1539`:
+Contoh di `zidstoretunnel.sh:1411`:
 
 ```
 create_service "vmess" "ZidStore Tunnel Xray Instance" "/usr/local/bin/xray run -config /etc/xray/vmess/%i.json"
@@ -71,7 +70,7 @@ Lisensi dicek sebelum apa pun yang dilakukan instalasi. `zidstoretunnel.sh:265-2
 | `zidstoretunnel.sh` | `zidstoretunnel.sh:264-300` validasi key dan IP |
 | `zidstoretunnel.sh` | `zidstoretunnel.sh:432-435` input domain |
 | `zidstoretunnel.sh` | `zidstoretunnel.sh:439-464` verifikasi DNS A record |
-| `zidstoretunnel.sh` | `zidstoretunnel.sh:1180-1188` konfigurasi sysctl ip_forward |
+| `zidstoretunnel.sh` | `zidstoretunnel.sh:1175-1183` konfigurasi sysctl ip_forward |
 | `config/haproxy/haproxy.cfg` | `config/haproxy/haproxy.cfg:43-63` frontend SSL termination |
 | `config/nginx/xray.conf` | `config/nginx/xray.conf:33-98` location proxy Xray WebSocket |
 | `config/xray/vmess.json` | `config/xray/vmess.json:8-28` inbound VMess port 80 |

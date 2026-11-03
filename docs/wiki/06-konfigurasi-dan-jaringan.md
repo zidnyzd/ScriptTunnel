@@ -15,7 +15,7 @@ Berikut adalah variabel default yang terdokumentasi di README:
 Namun, implementasi di skrip utama menunjukkan:
 
 - `timezone="Asia/Jakarta"` didefinisikan di `zidstoretunnel.sh:496`.
-- `swap_size="2G"` didefinisikan di `zidstoretunnel.sh:1773` (bukan ukuran swap yang lebih besar).
+- `swap_size="2G"` didefinisikan di `zidstoretunnel.sh:1645` (bukan ukuran swap yang lebih besar).
 - `domain_ns`, `cf_id`, `cf_key` tidak ditemukan di `zidstoretunnel.sh` atau di berkas konfigurasi repo. Variabel-variabel ini kemungkinan digunakan oleh aset yang diunduh dari API server (bot atau skrip manajemen) saat runtime.
 - `ZIDSTORE_VERSION="1.0.3"` di `zidstoretunnel.sh:8`, `VERSION` berisi `1.0.3`.
 
@@ -29,18 +29,17 @@ DNS dari luar ke port 53 di-redirect ke port 5300 (SlowDNS):
 iptables -t nat -A PREROUTING -i $interface -p udp -m udp --dport 53 -j REDIRECT --to-ports 5300
 ```
 
-Rujukan: `zidstoretunnel.sh:1162`.
+Rujukan: `zidstoretunnel.sh:1161`.
 
 ### POSTROUTING MASQUERADE
 
 Routing untuk jaringan VPN client:
 
 ```
-iptables -t nat -A POSTROUTING -s 10.8.0.0/24 -o $interface -j MASQUERADE
 iptables -t nat -A POSTROUTING -s 20.8.0.0/24 -o $interface -j MASQUERADE
 ```
 
-Rujukan: `zidstoretunnel.sh:1168`, `zidstoretunnel.sh:1174`.
+Rujukan: `zidstoretunnel.sh:1169-1173`.
 
 Interface ditentukan secara dinamis:
 
@@ -48,7 +47,7 @@ Interface ditentukan secara dinamis:
 interface=$(ip -4 route ls | grep default | grep -Po '(?<=dev )(\S+)' | head -1)
 ```
 
-Rujukan: `zidstoretunnel.sh:1152`.
+Rujukan: `zidstoretunnel.sh:1151`.
 
 Semua aturan disimpan dengan `iptables-save` ke `/etc/iptables/rules.v4`:
 
@@ -56,7 +55,7 @@ Semua aturan disimpan dengan `iptables-save` ke `/etc/iptables/rules.v4`:
 iptables-save >/etc/iptables/rules.v4
 ```
 
-Rujukan: `zidstoretunnel.sh:1163`, `zidstoretunnel.sh:1169`, `zidstoretunnel.sh:1175`, `zidstoretunnel.sh:1201-1205`.
+Rujukan: `zidstoretunnel.sh:1162`, `zidstoretunnel.sh:1170`, `zidstoretunnel.sh:1196-1200`.
 
 ## Tuning Kernel Linux
 
@@ -74,7 +73,7 @@ fi
 sysctl -p
 ```
 
-Rujukan: `zidstoretunnel.sh:1180-1188`.
+Rujukan: `zidstoretunnel.sh:1175-1183`.
 
 ### TCP BBR
 
@@ -91,7 +90,7 @@ sysctl -w net.core.wmem_max=8388608
 sysctl -w net.core.rmem_max=8388608
 ```
 
-Rujukan: `zidstoretunnel.sh:1190-1198`.
+Rujukan: `zidstoretunnel.sh:1185-1193`.
 
 ## Manajemen Rotasi Log
 
@@ -107,7 +106,7 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/srsbin:/usr/bin (catatan typ
 EOF
 ```
 
-Rujukan: `zidstoretunnel.sh:1495-1499`. Skrip logclear diunduh sebagai bagian dari `src.zip` ke `/usr/bin/` (`zidstoretunnel.sh:964-974`).
+Rujukan: `zidstoretunnel.sh:1367-1371`. Skrip logclear diunduh sebagai bagian dari `src.zip` ke `/usr/bin/` (`zidstoretunnel.sh:963-973`).
 
 README menyebutkan "Log rotation every 6 hours" (`README.md:138`).
 
@@ -127,7 +126,7 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 EOF
 ```
 
-Rujukan: `zidstoretunnel.sh:1442-1447`.
+Rujukan: `zidstoretunnel.sh:1314-1319`.
 
 ## Swap
 
@@ -143,7 +142,7 @@ swapon $swap_file
 echo "$swap_file swap swap defaults 0 0" >> /etc/fstab
 ```
 
-Rujukan: `zidstoretunnel.sh:1772-1785`. README lama menyebutkan ukuran swap lebih besar (`README.md:20`, `README.md:136`), namun skrip menggunakan 2G. Ketidaksesuaian ini adalah fakta dokumentasi vs implementasi.
+Rujukan: `zidstoretunnel.sh:1644-1657`. README lama menyebutkan ukuran swap lebih besar (`README.md:20`, `README.md:136`), namun skrip menggunakan 2G. Ketidaksesuaian ini adalah fakta dokumentasi vs implementasi.
 
 ## Rujukan Berkas:Baris
 
@@ -151,18 +150,17 @@ Rujukan: `zidstoretunnel.sh:1772-1785`. README lama menyebutkan ukuran swap lebi
 |---|---|
 | `zidstoretunnel.sh:8` | ZIDSTORE_VERSION 1.0.3 |
 | `zidstoretunnel.sh:496` | timezone Asia/Jakarta |
-| `zidstoretunnel.sh:1152` | Deteksi interface |
-| `zidstoretunnel.sh:1162` | PREROUTING UDP 53->5300 |
-| `zidstoretunnel.sh:1168` | POSTROUTING 10.8.0.0/24 MASQUERADE |
-| `zidstoretunnel.sh:1174` | POSTROUTING 20.8.0.0/24 MASQUERADE |
-| `zidstoretunnel.sh:1180-1188` | net.ipv4.ip_forward |
-| `zidstoretunnel.sh:1190-1198` | net.core.wmem_max/rmem_max |
-| `zidstoretunnel.sh:1201-1205` | iptables-save |
-| `zidstoretunnel.sh:1442-1447` | cron xp_all 02:00 |
-| `zidstoretunnel.sh:1882-1891` | Prompt reboot interaktif (timeout 60 detik; non-interaktif tanpa reboot) |
-| `zidstoretunnel.sh:1495-1499` | cron logclear */6 jam |
-| `zidstoretunnel.sh:1501` | restart cron |
-| `zidstoretunnel.sh:1772-1785` | swap 2G |
+| `zidstoretunnel.sh:1151` | Deteksi interface |
+| `zidstoretunnel.sh:1161` | PREROUTING UDP 53->5300 |
+| `zidstoretunnel.sh:1169-1173` | POSTROUTING 20.8.0.0/24 MASQUERADE |
+| `zidstoretunnel.sh:1175-1183` | net.ipv4.ip_forward |
+| `zidstoretunnel.sh:1185-1193` | net.core.wmem_max/rmem_max |
+| `zidstoretunnel.sh:1196-1200` | iptables-save |
+| `zidstoretunnel.sh:1314-1319` | cron xp_all 02:00 |
+| `zidstoretunnel.sh:1772-1781` | Prompt reboot interaktif (timeout 60 detik; non-interaktif tanpa reboot) |
+| `zidstoretunnel.sh:1367-1371` | cron logclear */6 jam |
+| `zidstoretunnel.sh:1373` | restart cron |
+| `zidstoretunnel.sh:1644-1657` | swap 2G |
 | `README.md:64-68` | Variabel default dokumentasi |
 | `README.md:20` | TCP BBR disebutkan |
 | `README.md:136` | Swap versi lama disebutkan |

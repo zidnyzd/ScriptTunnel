@@ -30,7 +30,7 @@ Xray Core menerima traffic di port 80 dan 443 untuk masing-masing protokol, deng
 
 Lapisan pertama, HAProxy, mengikat port 80 dan 443. `config/haproxy/haproxy.cfg:65-69` mendefinisikan frontend `http_in` yang melakukan redirect 301 ke HTTPS. `config/haproxy/haproxy.cfg:43-63` mendefinisikan frontend `https_in` yang memeriksa ACL `is_websocket` dan ACL path, lalu meneruskan ke `xray_ws` atau `nginx_http`.
 
-Lapisan kedua, Nginx, memiliki konfigurasi site di `/etc/nginx/conf.d/xray.conf` (`zidstoretunnel.sh:1089`). Blok `server` HTTPS di `config/nginx/xray.conf:10-113` menggunakan sertifikat `/etc/xray/xray.crt` dan kunci `/etc/xray/xray.key` (`config/nginx/xray.conf:16-17`), kemudian menetapkan location untuk setiap path protokol.
+Lapisan kedua, Nginx, memiliki konfigurasi site di `/etc/nginx/conf.d/xray.conf` (`zidstoretunnel.sh:1088`). Blok `server` HTTPS di `config/nginx/xray.conf:10-113` menggunakan sertifikat `/etc/xray/xray.crt` dan kunci `/etc/xray/xray.key` (`config/nginx/xray.conf:16-17`), kemudian menetapkan location untuk setiap path protokol.
 
 Lapisan ketiga, Xray Core, berjalan di `127.0.0.1:8080` dengan inbounds terpisah untuk setiap protokol. Setiap instance Xray dijalankan sebagai unit systemd templated:
 - `vmess@config.service` menggunakan `/etc/xray/vmess/config.json` (`systemd/vmess@config.service:11`)
@@ -42,12 +42,9 @@ Lapisan ketiga, Xray Core, berjalan di `127.0.0.1:8080` dengan inbounds terpisah
 
 | Layanan | Port | Protokol | Keterangan | Rujukan |
 |---|---|---|---|---|
-| SSH | 22 | TCP | SSH standar | `zidstoretunnel.sh:1804` |
-| Dropbear | 109 | TCP | SSH alternatif | `/etc/default/dropbear` (`zidstoretunnel.sh:978`) |
-| Dropbear | 143 | TCP | SSH alternatif | `/etc/default/dropbear` (`zidstoretunnel.sh:978`) |
-| OpenVPN TCP | 1194 | TCP/UDP | Server OpenVPN profil TCP | `zidstoretunnel.sh:1331` |
-| OpenVPN UDP | 2200 | UDP | Server OpenVPN profil UDP | `zidstoretunnel.sh:1356` |
-| OpenVPN SSL | 443 | TCP | Server OpenVPN profil SSL | `zidstoretunnel.sh:1380` |
+| SSH | 22 | TCP | SSH standar | `zidstoretunnel.sh:1676` |
+| Dropbear | 109 | TCP | SSH alternatif | `/etc/default/dropbear` (`zidstoretunnel.sh:977`) |
+| Dropbear | 143 | TCP | SSH alternatif | `/etc/default/dropbear` (`zidstoretunnel.sh:977`) |
 | Xray VMess WS | 80 | TCP | Inbound VMess tanpa TLS | `config/xray/vmess.json:9` |
 | Xray VMess WS | 443 | TCP | Inbound VMess dengan TLS | `config/xray/vmess.json:31` |
 | Xray VLESS WS | 80 | TCP | Inbound VLESS tanpa TLS | `config/xray/vless.json:9` |
@@ -57,7 +54,7 @@ Lapisan ketiga, Xray Core, berjalan di `127.0.0.1:8080` dengan inbounds terpisah
 | WebSocket proxy | 80/443 | TCP | Proksi Python ws.py | `systemd/ws.service:12` |
 | HAProxy | 80, 443 | TCP | SSL termination dan routing | `config/haproxy/haproxy.cfg:44`, `config/haproxy/haproxy.cfg:66` |
 | Nginx | 80, 443 | TCP | Reverse proxy backend xray_ws dan nginx_http | `config/haproxy/haproxy.cfg:75`, `config/haproxy/haproxy.cfg:81` |
-| SlowDNS (DNSTT) | 5300 | UDP | Redirect dari PREROUTING | `zidstoretunnel.sh:1162` |
+| SlowDNS (DNSTT) | 5300 | UDP | Redirect dari PREROUTING | `zidstoretunnel.sh:1161` |
 | DNSTT Server | 5300 | UDP | Listener SlowDNS | `systemd/dnstt-server.service:12` |
 | DNSTT Client | 88 | TCP/UDP | DoH ke 127.0.0.1:88 | `systemd/dnstt-client.service:12` |
 | BadVPN | 7100 | UDP | Listen address lokal | `systemd/badvpn.service:9` |
@@ -75,7 +72,7 @@ Lapisan ketiga, Xray Core, berjalan di `127.0.0.1:8080` dengan inbounds terpisah
 4. Jika traffic bukan WebSocket, HAProxy meneruskan ke `127.0.0.1:8081` (`config/haproxy/haproxy.cfg:62`). Port 8081 adalah Nginx yang melayani berkas statis dan reverse proxy tambahan.
 5. Nginx meneruskan path WebSocket ke `127.0.0.1:8080` (`config/nginx/xray.conf:35`) dengan header yang diperlukan.
 6. Xray Core memverifikasi payload sesuai protokol dan meneruskan trafik keluar ke internet melalui outbound `freedom` (`config/xray/vmess.json:63-66`).
-7. SlowDNS menggunakan DNSTT server di port 5300 (`systemd/dnstt-server.service:12`) dengan redirect iptables PREROUTING UDP 53 -> 5300 (`zidstoretunnel.sh:1162`). Client mengirim DNS query ke NS domain, DNSTT server meneruskan ke `127.0.0.1:443`, yang kemudian diurus oleh Xray Trojan inbound atau layanan lain.
+7. SlowDNS menggunakan DNSTT server di port 5300 (`systemd/dnstt-server.service:12`) dengan redirect iptables PREROUTING UDP 53 -> 5300 (`zidstoretunnel.sh:1161`). Client mengirim DNS query ke NS domain, DNSTT server meneruskan ke `127.0.0.1:443`, yang kemudian diurus oleh Xray Trojan inbound atau layanan lain.
 8. BadVPN mengikat `127.0.0.1:7100`, `127.0.0.1:7200`, `127.0.0.1:7300` (`systemd/badvpn.service:9`) untuk meneruskan trafik UDP game/VoIP.
 9. UDP Custom berjalan di port 2100 (`systemd/udp.service:8`) dengan konfigurasi `/usr/bin/config.json` (`config/udp-config.json:2`).
 10. WebSocket proxy Python `ws.py` berjalan sebagai unit `ws.service` (`systemd/ws.service:12`) yang dijalankan sebagai User=root.
@@ -112,8 +109,7 @@ Lapisan ketiga, Xray Core, berjalan di `127.0.0.1:8080` dengan inbounds terpisah
 | `systemd/dnstt-server.service:12` | Unit systemd dnstt-server |
 | `systemd/dnstt-client.service:12` | Unit systemd dnstt-client |
 | `config/udp-config.json:2` | Listener UDP port 2100 |
-| `zidstoretunnel.sh:1162` | Iptables PREROUTING UDP 53->5300 |
-| `zidstoretunnel.sh:1168` | Iptables POSTROUTING 10.8.0.0/24 MASQUERADE |
-| `zidstoretunnel.sh:1174` | Iptables POSTROUTING 20.8.0.0/24 MASQUERADE |
-| `zidstoretunnel.sh:1791` | Daftar unit systemd yang di-enable dan di-start |
+| `zidstoretunnel.sh:1161` | Iptables PREROUTING UDP 53->5300 |
+| `zidstoretunnel.sh:1169-1173` | Iptables POSTROUTING 20.8.0.0/24 MASQUERADE |
+| `zidstoretunnel.sh:1663` | Daftar unit systemd yang di-enable dan di-start |
 | `build.sh:57` | Kompresi gzip dan encoding base64 |

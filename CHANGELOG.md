@@ -42,6 +42,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Tanpa reboot paksa: cron daily_reboot dihapus; prompt reboot dengan timeout 60 detik, non-interaktif tidak reboot
 - Dokumentasi swap diselaraskan ke 2G mengikuti implementasi
 
+### Removed
+- OpenVPN dihapus dari stack (sudah tidak diperlukan): paket `openvpn` dan `easy-rsa` dari daftar apt, unduhan + verifikasi + ekstraksi `openvpn.zip`, profil client `client-tcp.ovpn` (1194), `client-udp.ovpn` (2200), `client-ssl.ovpn` (443), fungsi `input_cert_ovpn` + `allovpn.zip`, pengaturan `AUTOSTART`, telemetri `openvpn_ready`, dan aturan iptables MASQUERADE subnet `10.8.0.0/24`. Entri `openvpn.zip` dihapus dari manifest checksums.
+- Pembersihan idempoten saat upgrade: stop/disable/mask unit `openvpn@server-tcp`, `openvpn@server-udp`, `openvpn.service`; arsip sisa ke `/root/backup-openvpn-<tanggal>.tar.gz`; hapus `/etc/openvpn` dan berkas `.ovpn` klien; `AUTOSTART="none"`; purge paket `openvpn easy-rsa` (fail-open); telemetri milestone `openvpn_removed`. Instalasi baru tidak menyisakan sisa OpenVPN.
+- Port 2200 dihapus dari daftar `-exclude` udp-custom (tidak lagi dipakai OpenVPN).
+- Label "SSH OVPN" pada script menu pelanggan diganti menjadi "SSH"; tampilan port/link OpenVPN dihapus dari menu dan pesan akun.
+
 ## [1.0.0] - 2024-01-XX
 
 ### Added
@@ -85,9 +91,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added NoNewPrivileges for systemd services
 
 ## [Unreleased]
-
-### Removed
-- Dukungan OpenVPN dihapus karena sudah tidak diperlukan: paket `openvpn` dan `easy-rsa`, konfigurasi TCP/UDP/SSL di `/etc/openvpn/`, sertifikat, dan berkas client `.ovpn` tidak lagi dipasang. Target rilis 1.0.4.
 
 ### Planned
 - Web-based management dashboard

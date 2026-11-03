@@ -15,7 +15,7 @@
 #
 # Membutuhkan jaringan untuk mengunduh artefak eksternal (setup_22.x,
 # xray-install.sh, acme-install.sh, xray.linux.64bit, udp-custom-linux-amd64,
-# badvpn, openvpn.zip, src.zip, bot.zip). Artefak
+# badvpn, src.zip, bot.zip). Artefak
 # zidstoretunnel dihitung dari berkas encoded lokal di root repo.
 
 set -euo pipefail
@@ -56,7 +56,7 @@ printf '%s  xray.linux.64bit\n' "$HASH" >> "$RESULT"
 
 # Biner fodder dari server API ZidStore (path yang sama dengan installer)
 FODDER_BASE="https://zds.web.id/resources/fodder"
-for fodder in udp-custom-linux-amd64 badvpn openvpn.zip sqlite3-prebuilt.tar.gz; do
+for fodder in udp-custom-linux-amd64 badvpn sqlite3-prebuilt.tar.gz; do
     curl -fsSL -o "$TMPDIR/$fodder" "$FODDER_BASE/$fodder"
     HASH=$(sha256sum "$TMPDIR/$fodder" | awk '{print $1}')
     printf '%s  %s\n' "$HASH" "$fodder" >> "$RESULT"

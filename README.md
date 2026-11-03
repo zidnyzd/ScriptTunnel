@@ -1,11 +1,10 @@
 # ZidStore Tunnel
 
-A comprehensive VPN/Tunnel installation script for Ubuntu/Debian servers. This script installs and configures multiple proxy protocols including Xray (VMess, VLESS, Trojan, Shadowsocks), OpenVPN, SlowDNS, WebSocket, BadVPN, UDP Custom, and more.
+A comprehensive VPN/Tunnel installation script for Ubuntu/Debian servers. This script installs and configures multiple proxy protocols including Xray (VMess, VLESS, Trojan, Shadowsocks), SlowDNS, WebSocket, BadVPN, UDP Custom, and more.
 
 ## Features
 
 - **Xray Core**: VMess, VLESS, Trojan, Shadowsocks with WebSocket + gRPC
-- **OpenVPN**: TCP, UDP, and SSL configurations
 - **SlowDNS**: DNSTT client/server for DNS tunneling
 - **WebSocket Proxy**: Python-based WebSocket proxy
 - **BadVPN**: UDP tunneling (ports 7100, 7200, 7300)
@@ -73,9 +72,6 @@ The script uses the following default configuration (can be modified in the scri
 |---------|-------|
 | SSH | 22 |
 | Dropbear | 143, 109 |
-| OpenVPN TCP | 1194 |
-| OpenVPN UDP | 2200 |
-| OpenVPN SSL | 443 |
 | Xray VMess | 80, 443 (WS) |
 | Xray VLESS | 80, 443 (WS) |
 | Xray Trojan | 80, 443 (WS) |
@@ -94,7 +90,6 @@ After installation completes, the server will prompt for a reboot. Once rebooted
 
 1. Access the dashboard via `ft dashboard` command
 2. Client configurations available at `http://yourdomain.com/`
-3. OpenVPN configs: `client-tcp.ovpn`, `client-udp.ovpn`, `client-ssl.ovpn`
 
 ## Management Commands
 
@@ -120,10 +115,9 @@ systemctl restart vmess@config vless@config trojan@config shadowsocks@config hap
 /etc/xray/trojan/    # Trojan configs
 /etc/xray/shadowsocks/ # Shadowsocks configs
 /etc/slowdns/        # SlowDNS keys and binaries
-/etc/openvpn/        # OpenVPN configs
 /etc/haproxy/        # HAProxy config
 /etc/nginx/          # Nginx configs
-/var/www/html/       # Web files (OpenVPN configs)
+/var/www/html/       # Web files
 /usr/bin/            # Custom binaries
 /root/.acme.sh/      # SSL certificates
 /root/.bot/          # Telegram bot (if configured)

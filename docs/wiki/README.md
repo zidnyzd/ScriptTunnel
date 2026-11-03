@@ -1,6 +1,6 @@
 # Wiki Teknis ZidStore Tunnel
 
-Ringkasan satu paragraf: ZidStore Tunnel adalah skrip instalasi otomatis berbasis Bash untuk membangun server VPN multi-protokol di VPS Linux (Ubuntu/Debian). Skrip ini mengintegrasikan Xray Core (VMess, VLESS, Trojan, Shadowsocks), OpenVPN, SlowDNS, WebSocket proxy, BadVPN, dan UDP Custom dalam satu host, dengan HAProxy sebagai titik masuk SSL termination dan Nginx sebagai reverse proxy. Semua komponen dikelola sebagai unit systemd, dan konfigurasi dibangun dari template yang diunduh dari ZidStore API server.
+Ringkasan satu paragraf: ZidStore Tunnel adalah skrip instalasi otomatis berbasis Bash untuk membangun server VPN multi-protokol di VPS Linux (Ubuntu/Debian). Skrip ini mengintegrasikan Xray Core (VMess, VLESS, Trojan, Shadowsocks), SlowDNS, WebSocket proxy, BadVPN, dan UDP Custom dalam satu host, dengan HAProxy sebagai titik masuk SSL termination dan Nginx sebagai reverse proxy. Semua komponen dikelola sebagai unit systemd, dan konfigurasi dibangun dari template yang diunduh dari ZidStore API server.
 
 ## Peta Navigasi
 
@@ -10,7 +10,7 @@ Ringkasan satu paragraf: ZidStore Tunnel adalah skrip instalasi otomatis berbasi
 | `01-ikhtisar.md` | Definisi, tujuan, scope, prinsip desain, keamanan |
 | `02-arsitektur.md` | Topologi jaringan, multiplexing port 80/443, matriks port |
 | `03-alur-instalasi.md` | Tahapan instalasi dari curl hingga selesai |
-| `04-layanan-dan-protokol.md` | Detail teknis VMess, VLESS, Trojan, Shadowsocks, OpenVPN, SlowDNS, BadVPN, UDP Custom, WebSocket |
+| `04-layanan-dan-protokol.md` | Detail teknis VMess, VLESS, Trojan, Shadowsocks, SlowDNS, BadVPN, UDP Custom, WebSocket |
 | `05-build-dan-obfuscasi.md` | Pipeline build, kompresi, chunking, self-extracting loader |
 | `06-konfigurasi-dan-jaringan.md` | Variabel default, iptables, tuning kernel, cron |
 | `07-jebakan-dan-troubleshooting.md` | Gejala, penyebab teknis, cara mengatasi |
@@ -35,7 +35,6 @@ Ringkasan satu paragraf: ZidStore Tunnel adalah skrip instalasi otomatis berbasi
 | Setup SSL Let's Encrypt via acme.sh | `03-alur-instalasi.md` |
 | Konfigurasi VMess/VLESS/Trojan/Shadowsocks | `04-layanan-dan-protokol.md` |
 | WebSocket path dan gRPC service name | `04-layanan-dan-protokol.md` |
-| OpenVPN TCP/UDP/SSL dan profil klien ovpn | `04-layanan-dan-protokol.md` |
 | SlowDNS DNSTT dan delegasi NS Cloudflare | `04-layanan-dan-protokol.md` |
 | BadVPN UDPGW port 7100/7200/7300 | `04-layanan-dan-protokol.md` |
 | Skrip Python ws.py dan PROXY protocol v1 | `04-layanan-dan-protokol.md` |
