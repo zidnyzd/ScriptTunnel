@@ -2,7 +2,7 @@
 
 ## Xray Core
 
-Xray Core diinstal melalui skrip resmi XTLS (`zidstoretunnel.sh:790-800`) dengan fallback ke biner tetap `xray.linux.64bit` jika instalasi resmi gagal. Setiap protokol berjalan sebagai instance systemd terpisah yang menunjuk ke direktori konfigurasi masing-masing.
+Xray Core diinstal melalui skrip resmi XTLS (`zidstoretunnel.sh:1208-1259`) dengan fallback ke biner tetap `xray.linux.64bit` jika instalasi resmi gagal. Kedua jalur unduhan memakai berkas sementara dan verifikasi SHA256 terhadap manifest `checksums.txt` sebelum eksekusi. Setiap protokol berjalan sebagai instance systemd terpisah yang menunjuk ke direktori konfigurasi masing-masing.
 
 ### VMess
 
@@ -11,7 +11,7 @@ Xray Core diinstal melalui skrip resmi XTLS (`zidstoretunnel.sh:790-800`) dengan
 - Port 80 tanpa TLS, `network: ws`, `path: /vmess` (`config/xray/vmess.json:8-28`).
 - Port 443 dengan TLS, `network: ws`, `path: /vmess` (`config/xray/vmess.json:30-60`).
 
-Konfigurasi klien menggunakan UUID `1d1c1d94-6987-4658-a4dc-8821a30fe7e0` dengan `alterId: 0` (`config/xray/vmess.json:14-15`). Skrip instalasi mengganti UUID ini dengan UUID acak yang di-generate dari `/proc/sys/kernel/random/uuid` untuk seluruh protokol (`zidstoretunnel.sh:1186-1189`).
+Konfigurasi klien menggunakan UUID `1d1c1d94-6987-4658-a4dc-8821a30fe7e0` dengan `alterId: 0` (`config/xray/vmess.json:14-15`). Skrip instalasi mengganti UUID ini dengan UUID acak yang di-generate dari `/proc/sys/kernel/random/uuid` untuk seluruh protokol (`zidstoretunnel.sh:1687-1694`).
 
 Outbound adalah `freedom` (`config/xray/vmess.json:62-67`).
 
@@ -29,7 +29,7 @@ Outbound adalah `freedom` (`config/xray/vmess.json:62-67`).
 
 ### Catatan tentang gRPC
 
-README dan CHANGELOG menyebut dukungan gRPC (`README.md:7`, `CHANGELOG.md:13`), namun seluruh konfigurasi Xray yang ada di repo ini hanya menggunakan `network: "ws"` (`config/xray/vmess.json:21`, `config/xray/vless.json:21`, `config/xray/trojan.json:20`, `config/xray/shadowsocks.json:22`). Tidak ada satu pun `grpcSettings` pada konfigurasi di repo. Klaim gRPC berasal dari dokumentasi dan aset server, bukan dari template lokal.
+README dan CHANGELOG menyebut dukungan gRPC (`README.md:7`, `CHANGELOG.md:21`), namun seluruh konfigurasi Xray yang ada di repo ini hanya menggunakan `network: "ws"` (`config/xray/vmess.json:21`, `config/xray/vless.json:21`, `config/xray/trojan.json:20`, `config/xray/shadowsocks.json:22`). Tidak ada satu pun `grpcSettings` pada konfigurasi di repo. Klaim gRPC berasal dari dokumentasi dan aset server, bukan dari template lokal.
 
 ### Path WebSocket
 
@@ -59,11 +59,11 @@ Tiga profil dibuat oleh skrip di `/etc/openvpn/`:
 
 | Profil | Protokol | Port | Baris |
 |---|---|---|---|
-| `client-tcp.ovpn` | tcp | 1194 | `zidstoretunnel.sh:848-871` |
-| `client-udp.ovpn` | udp | 2200 | `zidstoretunnel.sh:873-896` |
-| `client-ssl.ovpn` | tcp | 443 | `zidstoretunnel.sh:898-921` |
+| `client-tcp.ovpn` | tcp | 1194 | `zidstoretunnel.sh:1327-1350` |
+| `client-udp.ovpn` | udp | 2200 | `zidstoretunnel.sh:1352-1375` |
+| `client-ssl.ovpn` | tcp | 443 | `zidstoretunnel.sh:1377-1400` |
 
-Struktur dasar profil TCP (`zidstoretunnel.sh:848-871`):
+Struktur dasar profil TCP (`zidstoretunnel.sh:1327-1350`):
 
 ```
 auth-user-pass
@@ -90,13 +90,13 @@ cipher none
 auth none
 ```
 
-Perbedaan utama antar profil hanya pada baris `proto` dan `remote`. Profil UDP memakai `proto udp` dan `remote $ip 2200` (`zidstoretunnel.sh:876-877`). Profil SSL memakai `proto tcp` dan `remote $ip 443` (`zidstoretunnel.sh:901-902`).
+Perbedaan utama antar profil hanya pada baris `proto` dan `remote`. Profil UDP memakai `proto udp` dan `remote $ip 2200` (`zidstoretunnel.sh:1355-1356`). Profil SSL memakai `proto tcp` dan `remote $ip 443` (`zidstoretunnel.sh:1380-1381`).
 
 ### Peny-CA dan Distribusi
 
-Fungsi `input_cert_ovpn` (`zidstoretunnel.sh:923-935`) menyisipkan blok `<ca>` dari `/etc/openvpn/ca.crt` ke setiap profil, menyalinnya ke `/var/www/html/`, lalu membuat `allovpn.zip`. Skrip juga menjalankan `sed -i 's/#AUTOSTART="all"/AUTOSTART="all"/g' /etc/default/openvpn` untuk mengaktifkan autostart (`zidstoretunnel.sh:933` dan `zidstoretunnel.sh:945`).
+Fungsi `input_cert_ovpn` (`zidstoretunnel.sh:1402-1414`) menyisipkan blok `<ca>` dari `/etc/openvpn/ca.crt` ke setiap profil, menyalinnya ke `/var/www/html/`, lalu membuat `allovpn.zip`. Skrip juga menjalankan `sed -i 's/#AUTOSTART="all"/AUTOSTART="all"/g' /etc/default/openvpn` untuk mengaktifkan autostart (`zidstoretunnel.sh:1412` dan `zidstoretunnel.sh:1424`).
 
-Catatan: profil OpenVPN yang dihasilkan tidak menyertakan `ca` inline di dalam berkas statis `/var/www/html/*.ovpn` sampai fungsi `input_cert_ovpn` berjalan, dan `allovpn.zip` dibuat ulang di `zidstoretunnel.sh:940-942` setelah fungsi tersebut dipanggil.
+Catatan: profil OpenVPN yang dihasilkan tidak menyertakan `ca` inline di dalam berkas statis `/var/www/html/*.ovpn` sampai fungsi `input_cert_ovpn` berjalan, dan `allovpn.zip` dibuat ulang di `zidstoretunnel.sh:1419-1421` setelah fungsi tersebut dipanggil.
 
 ## SlowDNS (DNSTT)
 
@@ -117,11 +117,11 @@ Flag `-doh` pada `dnstt-client` menunjuk ke endpoint DoH Cloudflare (`systemd/dn
 
 Domain NS untuk SlowDNS ditentukan oleh variabel `domain_ns` yang didokumentasikan sebagai default `dnstt.me` (`README.md:64`). Domain NS ini harus didelegasikan ke Cloudflare sebagai NS record sehingga query untuk subdomain acak diarahkan ke server SlowDNS. Delegasi Cloudflare API memerlukan `cf_id` dan `cf_key` (`README.md:66-67`).
 
-Variabel `domain_ns` dan `cf_id`/`cf_key` ini tidak didefinisikan di `zidstoretunnel.sh`. Yang ada di skrip hanyalah `timezone` (`zidstoretunnel.sh:155`). Ini berarti konfigurasi SlowDNS pada repo ini berasal dari sisi server API atau aset yang diunduh, bukan dari variabel yang bisa diedit langsung di skrip utama.
+Variabel `domain_ns` dan `cf_id`/`cf_key` ini tidak didefinisikan di `zidstoretunnel.sh`. Yang ada di skrip hanyalah `timezone` (`zidstoretunnel.sh:496`). Ini berarti konfigurasi SlowDNS pada repo ini berasal dari sisi server API atau aset yang diunduh, bukan dari variabel yang bisa diedit langsung di skrip utama.
 
 ### Redirect iptables
 
-Query DNS ke port 53 diarahkan ke port 5300 melalui aturan PREROUTING (`zidstoretunnel.sh:744`):
+Query DNS ke port 53 diarahkan ke port 5300 melalui aturan PREROUTING (`zidstoretunnel.sh:1162`):
 
 ```
 iptables -t nat -A PREROUTING -i $interface -p udp -m udp --dport 53 -j REDIRECT --to-ports 5300
@@ -141,23 +141,23 @@ ExecStart=/usr/bin/badvpn --listen-addr 127.0.0.1:7100 --listen-addr 127.0.0.1:7
 
 Rujukan: `systemd/badvpn.service:9`.
 
-Skrip installer membuat unit dengan tambahan `--max-connections-for-client 64` dan `--client-socket-sndbuf 4194304` (`zidstoretunnel.sh:1171`), sedangkan berkas repo `systemd/badvpn.service:9` tidak memuat kedua flag tersebut. Unit di repo juga tidak menyertakan capability bounding set, sementara unit hasil installer berjalan sebagai root dengan `NoNewPrivileges=true` (`zidstoretunnel.sh:1168-1170`).
+Skrip installer membuat unit dengan tambahan `--max-connections-for-client 64` dan `--client-socket-sndbuf 4194304` (`zidstoretunnel.sh:1663`), sedangkan berkas repo `systemd/badvpn.service:9` tidak memuat kedua flag tersebut. Unit di repo juga tidak menyertakan capability bounding set, sementara unit hasil installer berjalan sebagai root dengan `NoNewPrivileges=true` (`zidstoretunnel.sh:1660-1662`).
 
-Pembuatan unit BadVPN di `zidstoretunnel.sh:1162` ditulis dengan heredoc quoted (`<<'EOF'`), sehingga variabel tidak di-expand, sedangkan unit lain menggunakan heredoc unquoted.
+Pembuatan unit BadVPN di `zidstoretunnel.sh:1654` ditulis dengan heredoc quoted (`<<'EOF'`), sehingga variabel tidak di-expand, sedangkan unit lain menggunakan heredoc unquoted.
 
-Buffer socket UDP dinaikkan ke 8MB untuk BadVPN (`zidstoretunnel.sh:772-780`), karena BadVPN sering gagal dengan pesan "out of UDP buffer" pada buffer default.
+Buffer socket UDP dinaikkan ke 8MB untuk BadVPN (`zidstoretunnel.sh:1190-1198`), karena BadVPN sering gagal dengan pesan "out of UDP buffer" pada buffer default.
 
 ## WebSocket Proxy (ws.py)
 
-Skrip Python `ws.py` diunduh ke `/usr/bin/ws.py` (`zidstoretunnel.sh:638-644`) dan dijalankan sebagai unit `ws.service`:
+Skrip Python `ws.py` diunduh ke `/usr/bin/ws.py` (`zidstoretunnel.sh:1048-1054`) dan dijalankan sebagai unit `ws.service`:
 
 ```
 ExecStart=/usr/bin/python3 -O /usr/bin/ws.py
 ```
 
-Rujukan: `systemd/ws.service:12`, dan identik di `zidstoretunnel.sh:1099`.
+Rujukan: `systemd/ws.service:12`, dan identik di `zidstoretunnel.sh:1583`.
 
-Unit ini berjalan sebagai `User=root` dengan `CapabilityBoundingSet=CAP_NET_ADMIN CAP_NET_BIND_SERVICE` (`systemd/ws.service:8-11`). Skrip installer membuat direktori `/tmp/ws-ips` sebelum menjalankan service (`zidstoretunnel.sh:1098`), yang dipakai untuk korelasi IP antar koneksi.
+Unit ini berjalan sebagai `User=root` dengan `CapabilityBoundingSet=CAP_NET_ADMIN CAP_NET_BIND_SERVICE` (`systemd/ws.service:8-11`). Skrip installer membuat direktori `/tmp/ws-ips` sebelum menjalankan service (`zidstoretunnel.sh:1582`), yang dipakai untuk korelasi IP antar koneksi.
 
 Perilaku yang didokumentasikan:
 
@@ -169,9 +169,9 @@ Nginx sudah menyiapkan location `/ws` dengan header upgrade WebSocket dan timeou
 
 ## UDP Custom
 
-UDP Custom adalah biner tunneling UDP+SOCKS5 yang berjalan di `/usr/bin/udp-custom-linux-amd64` (`zidstoretunnel.sh:720-724`, `zidstoretunnel.sh:175`).
+UDP Custom adalah biner tunneling UDP+SOCKS5 yang berjalan di `/usr/bin/udp-custom-linux-amd64` (`zidstoretunnel.sh:1124-1129`, `zidstoretunnel.sh:515`).
 
-Konfigurasi runtime `/usr/bin/config.json` dibuat oleh skrip (`zidstoretunnel.sh:949-959`) dan identik dengan `config/udp-config.json`:
+Konfigurasi runtime `/usr/bin/config.json` dibuat oleh skrip (`zidstoretunnel.sh:1430-1440`) dan identik dengan `config/udp-config.json`:
 
 ```
 {
@@ -192,7 +192,7 @@ Unit systemd:
 ExecStart=/usr/bin/udp server -exclude 2200,7300,7200,7100,323,10008,10004 /usr/bin/config.json
 ```
 
-Rujukan: `systemd/udp.service:8`, identik di `zidstoretunnel.sh:1115`.
+Rujukan: `systemd/udp.service:8`, identik di `zidstoretunnel.sh:1601`.
 
 Flag `-exclude` mencegah daemon membindingi port yang sudah dipakai layanan lain: 2200 (OpenVPN UDP), 7300/7200/7100 (BadVPN), 323 (chrony NTP), serta 10008 dan 10004.
 
@@ -246,7 +246,7 @@ Konfigurasi site `config/nginx/xray.conf`:
 
 ## Dropbear
 
-Dropbear replaces OpenSSH as the lightweight SSH server. Konfigurasi di `/etc/default/dropbear` diunduh dari server API (`zidstoretunnel.sh:594-609`), file init di `/etc/init.d/dropbear`, dan host key DSA di `/etc/dropbear/dropbear_dss_host_key`. Unit dropbear bawaan sistem dihapus (`zidstoretunnel.sh:1078-1080`) dan digantikan oleh SysV init script.
+Dropbear replaces OpenSSH as the lightweight SSH server. Konfigurasi di `/etc/default/dropbear` diunduh dari server API (`zidstoretunnel.sh:976-991`), file init di `/etc/init.d/dropbear`, dan host key DSA di `/etc/dropbear/dropbear_dss_host_key`. Unit dropbear bawaan sistem dihapus (`zidstoretunnel.sh:1557-1559`) dan digantikan oleh SysV init script.
 
 ## Manajemen Layanan
 
@@ -262,13 +262,13 @@ Dropbear replaces OpenSSH as the lightweight SSH server. Konfigurasi di `/etc/de
 | `config/xray/vless.json:18` | `decryption: none` |
 | `config/xray/trojan.json:14` | Password Trojan |
 | `config/xray/shadowsocks.json:14` | Metode `2022-blake3-aes-128-gcm` |
-| `zidstoretunnel.sh:1186-1189` | Rotasi UUID semua protokol |
-| `zidstoretunnel.sh:848-921` | Pembuatan tiga profil ovpn |
-| `zidstoretunnel.sh:923-935` | Fungsi input_cert_ovpn |
-| `zidstoretunnel.sh:949-959` | Pembuatan /usr/bin/config.json |
-| `zidstoretunnel.sh:1107-1125` | Unit udp.service installer |
-| `zidstoretunnel.sh:1161-1179` | Unit badvpn.service installer |
-| `zidstoretunnel.sh:1098` | Pembuatan /tmp/ws-ips |
+| `zidstoretunnel.sh:1687-1694` | Rotasi UUID semua protokol |
+| `zidstoretunnel.sh:1327-1400` | Pembuatan tiga profil ovpn |
+| `zidstoretunnel.sh:1402-1414` | Fungsi input_cert_ovpn |
+| `zidstoretunnel.sh:1430-1440` | Pembuatan /usr/bin/config.json |
+| `zidstoretunnel.sh:1593-1611` | Unit udp.service installer |
+| `zidstoretunnel.sh:1651-1671` | Unit badvpn.service installer |
+| `zidstoretunnel.sh:1582` | Pembuatan /tmp/ws-ips |
 | `config/haproxy/haproxy.cfg:51-59` | ACL dan routing WebSocket |
 | `config/nginx/nginx.conf:34-35` | Rate limiting zone |
 | `config/nginx/xray.conf:25-27` | Header keamanan |

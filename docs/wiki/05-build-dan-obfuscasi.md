@@ -144,7 +144,7 @@ Rujukan: `build.sh:122`, `build.sh:126`.
 
 1. Edit `zidstoretunnel.sh` sesuai kebutuhan.
 2. Perbarui `ZIDSTORE_VERSION` di `zidstoretunnel.sh:8`.
-3. Perbarui `VERSION` di berkas `VERSION` (saat ini berisi `1.0.1`).
+3. Perbarui `VERSION` di berkas `VERSION` (saat ini berisi `1.0.3`).
 4. Jalankan `./build.sh`. Opsional, berikan `--update-url` untuk mengonfigurasi URL pembaruan otomatis:
 
 ```
@@ -152,7 +152,7 @@ chmod +x build.sh
 ./build.sh --update-url https://raw.githubusercontent.com/zidnyzd/ScriptTunnel/main/zidstoretunnel
 ```
 
-Rujukan: `build.sh:143-145`, `zidstoretunnel.sh:28-39`.
+Rujukan: `build.sh:143-145`, `zidstoretunnel.sh:89-166`.
 5. Di dalam `build.sh`, output versi dicetak sebagai `v${VERSION}` (`build.sh:134`).
 6. Commit dan push hanya berkas `zidstoretunnel` (bukan `zidstoretunnel.sh`) bersama `VERSION` dan `CHANGELOG.md`:
 
@@ -190,19 +190,15 @@ printf '%s' "${chunk1}${chunk2}..." | base64 -d | gzip -d
 
 3. `build.sh` tidak menggunakan enkripsi, hanya kompresi dan encoding. Anggota tim yang memiliki akses ke `zidstoretunnel` dapat mengembalikannya ke bentuk sumber dengan menggabungkan chunk dan menjalankan `base64 -d | gzip -d`.
 4. Tidak ada tanda tangan digital atau verifikasi integritas pada berkas `zidstoretunnel`. Jika URL berkas diubah, pengguna akan menjalankan kode dari sumber yang tidak terverifikasi.
-5. Auto-update (`--update`) meniru eksekusi remote langsung ke `bash` tanpa pemeriksaan hash:
+5. Auto-update (`--update`) di v1.0.3 mengunduh pembaruan ke berkas sementara dan manifest `checksums.txt` dari `${ZIDSTORE_API_URL}/resources/checksums.txt`, memverifikasi SHA256 terhadap manifest, baru mengeksekusi dengan `--key` diteruskan. Gagal verifikasi menghentikan pembaruan (fail closed). Perilaku baru mengikuti baris `zidstoretunnel.sh:89-166`.
 
-```
-echo "$REMOTE_SCRIPT" | bash
-```
-
-Rujukan: `zidstoretunnel.sh:33`.
+Rujukan: `zidstoretunnel.sh:89-166`.
 
 ### Rekomendasi
 
 - Jangan meng-upload `zidstoretunnel.sh` ke repositori publik.
 - Jangan membagikan `zidstoretunnel` tanpa memverifikasi keasliannya melalui hash atau sumber tepercaya.
-- Pertimbangkan menambahkan pemeriksaan integritas (sha256) pada `--update` di versi mendatang.
+- Pertahankan pemeriksaan integritas (sha256) pada `--update` dan unduhan eksternal terhadap manifest `checksums.txt` di setiap rilis.
 
 ## Rujukan Berkas:Baris
 
@@ -226,7 +222,7 @@ Rujukan: `zidstoretunnel.sh:33`.
 | `build.sh:141` | Perintah instal pengguna |
 | `build.sh:143-145` | URL auto-update |
 | `zidstoretunnel.sh:8` | Variabel ZIDSTORE_VERSION |
-| `zidstoretunnel.sh:28-39` | Fungsi --update |
-| `zidstoretunnel.sh:33` | Eksekusi remote via bash |
+| `zidstoretunnel.sh:89-166` | Fungsi --update |
+| `zidstoretunnel.sh:114-116` | Eksekusi skrip pembaruan terverifikasi dengan --key |
 | `README.md:64-68` | Default variabel konfigurasi build |
 | `README.md:164-167` | Panduan commit build |

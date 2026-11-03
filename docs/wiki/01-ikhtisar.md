@@ -24,7 +24,7 @@ Scope proyek ini mencakup:
 - Konfigurasi Nginx sebagai reverse proxy untuk semua path Xray WebSocket.
 - Manajemen unit systemd untuk semua komponen.
 - Validasi lisensi berbasis IP.
-- Auto-update melalui URL GitHub raw.
+- Auto-update melalui URL GitHub raw dengan verifikasi sha256 terhadap manifest checksum API.
 
 ## Prinsip Desain
 
@@ -32,7 +32,7 @@ Scope proyek ini mencakup:
 
 Setiap komponen ditempatkan sebagai unit systemd terpisah. VMess, VLESS, Trojan, dan Shadowsocks menggunakan template instance `vmess@config.service`, `vless@config.service`, `trojan@config.service`, `shadowsocks@config.service`. Setiap instance membaca file konfigurasi `config.json` di direktori masing-masing `/etc/xray/vmess`, `/etc/xray/vless`, `/etc/xray/trojan`, `/etc/xray/shadowsocks`.
 
-Contoh di `zidstoretunnel.sh:1061`:
+Contoh di `zidstoretunnel.sh:1539`:
 
 ```
 create_service "vmess" "ZidStore Tunnel Xray Instance" "/usr/local/bin/xray run -config /etc/xray/vmess/%i.json"
@@ -44,7 +44,7 @@ HAProxy menerima koneksi port 80 dan 443, menerapkan SSL termination, lalu mener
 
 ### Proteksi Lisensi
 
-Lisensi dicek sebelum apa pun yang dilakukan instalasi. `zidstoretunnel.sh:60-65` memeriksa `INSTALL_KEY`, `zidstoretunnel.sh:68-70` memvalidasi kunci ke `ZIDSTORE_API_URL/api/key?key=INSTALL_KEY`. IP VPS divalidasi melawan daftar yang diberikan oleh API server.
+Lisensi dicek sebelum apa pun yang dilakukan instalasi. `zidstoretunnel.sh:265-295` memeriksa `INSTALL_KEY`, dan `zidstoretunnel.sh:298-300` memvalidasi kunci lewat header `X-API-Key` ke `ZIDSTORE_API_URL/api/key` (bukan parameter query). IP VPS divalidasi melawan daftar yang diberikan oleh API server. Setelah validasi berhasil, skrip mengunduh manifest `resources/checksums.txt` (`zidstoretunnel.sh:313-326`) dan memverifikasi setiap unduhan eksternal dengan fungsi `verify_sha256` (`zidstoretunnel.sh:327-336`) sebelum eksekusi.
 
 ## Apa yang BUKAN Proyek Ini
 
@@ -62,15 +62,16 @@ Lisensi dicek sebelum apa pun yang dilakukan instalasi. `zidstoretunnel.sh:60-65
 4. Capability bounding set yang terbatas untuk unit systemd: `CAP_NET_ADMIN`, `CAP_NET_BIND_SERVICE`, dan `CAP_NET_RAW` saja.
 5. `NoNewPrivileges=yes` atau `NoNewPrivileges=true` di hampir semua unit systemd.
 6. Sertifikat SSL menggunakan Let's Encrypt dengan `acme.sh`.
+7. Izin least-privilege pada filesystem: direktori dan berkas instalasi diberikan mode dan kepemilikan spesifik sesuai peta `DIR_PERMS` dan `FILE_PERMS` (`zidstoretunnel.sh:389-411`, `zidstoretunnel.sh:468-494`).
 
 ## Tabel Rujukan Berkas Penting
 
 | Berkas | Baris Penting |
 |---|---|
-| `zidstoretunnel.sh` | `zidstoretunnel.sh:60-70` validasi key dan IP |
-| `zidstoretunnel.sh` | `zidstoretunnel.sh:124-127` input domain |
-| `zidstoretunnel.sh` | `zidstoretunnel.sh:130-136` verifikasi DNS A record |
-| `zidstoretunnel.sh` | `zidstoretunnel.sh:762-770` konfigurasi sysctl ip_forward |
+| `zidstoretunnel.sh` | `zidstoretunnel.sh:264-300` validasi key dan IP |
+| `zidstoretunnel.sh` | `zidstoretunnel.sh:432-435` input domain |
+| `zidstoretunnel.sh` | `zidstoretunnel.sh:439-464` verifikasi DNS A record |
+| `zidstoretunnel.sh` | `zidstoretunnel.sh:1180-1188` konfigurasi sysctl ip_forward |
 | `config/haproxy/haproxy.cfg` | `config/haproxy/haproxy.cfg:43-63` frontend SSL termination |
 | `config/nginx/xray.conf` | `config/nginx/xray.conf:33-98` location proxy Xray WebSocket |
 | `config/xray/vmess.json` | `config/xray/vmess.json:8-28` inbound VMess port 80 |

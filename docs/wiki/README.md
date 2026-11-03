@@ -45,7 +45,7 @@ Ringkasan satu paragraf: ZidStore Tunnel adalah skrip instalasi otomatis berbasi
 | Variabel konfigurasi default | `06-konfigurasi-dan-jaringan.md` |
 | Aturan iptables NAT PREROUTING dan MASQUERADE | `06-konfigurasi-dan-jaringan.md` |
 | Tuning kernel Linux dan TCP BBR | `06-konfigurasi-dan-jaringan.md` |
-| Rotasi log dan scheduled reboot | `06-konfigurasi-dan-jaringan.md` |
+| Rotasi log dan prompt reboot | `06-konfigurasi-dan-jaringan.md` |
 | Validasi lisensi gagal IP mismatch | `07-jebakan-dan-troubleshooting.md` |
 | Port 80/443 konflik HAProxy/Nginx | `07-jebakan-dan-troubleshooting.md` |
 | Sertifikat SSL acme.sh timeout | `07-jebakan-dan-troubleshooting.md` |
@@ -60,7 +60,7 @@ Ringkasan satu paragraf: ZidStore Tunnel adalah skrip instalasi otomatis berbasi
 | `build.sh` | Kompresi gzip, encoding base64, chunking array, loader self-extracting |
 | `install.sh` | Bootstrap installer, unduh dan jalankan skrip utama |
 | `test_structure.sh` | Verifikasi kelengkapan berkas dan struktur direktori |
-| `VERSION` | Versi release (1.0.1) |
+| `VERSION` | Versi release (1.0.3) |
 | `CHANGELOG.md` | Riwayat perubahan release |
 | `README.md` | Dokumentasi pengguna dan panduan instalasi |
 | `LICENSE` | Lisensi MIT |

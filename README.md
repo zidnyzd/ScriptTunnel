@@ -16,7 +16,7 @@ A comprehensive VPN/Tunnel installation script for Ubuntu/Debian servers. This s
 - **SSL Certificates**: Automatic Let's Encrypt via acme.sh
 - **Cloudflare DNS**: Automatic NS record creation for SlowDNS
 - **Systemd Services**: All components managed as services
-- **Swap**: Automatic 5GB swap file creation
+- **Swap**: Automatic 2GB swap file creation
 - **BBR**: TCP BBR congestion control
 
 ## Requirements
@@ -65,7 +65,7 @@ The script uses the following default configuration (can be modified in the scri
 | `timezone` | `Asia/Jakarta` | Server timezone |
 | `cf_id` | Your Cloudflare email | Cloudflare API email |
 | `cf_key` | Your Cloudflare API key | Cloudflare Global API Key |
-| `swap_size` | `5G` | Swap file size |
+| `swap_size` | `2G` | Swap file size |
 
 ## Ports Used
 
@@ -133,7 +133,7 @@ systemctl restart vmess@config vless@config trojan@config shadowsocks@config hap
 
 - The script disables UFW and firewalld, using iptables directly
 - Sets `net.ipv4.ip_forward=1` for VPN routing
-- Creates 5GB swap file
+- Creates 2GB swap file
 - Configures daily reboot at 05:00
 - Log rotation every 6 hours
 
@@ -146,7 +146,7 @@ domain_ns="your-ns-domain.com"
 timezone="Your/Timezone"
 cf_id="your@email.com"
 cf_key="your-cloudflare-api-key"
-swap_size="5G"
+swap_size="2G"
 ```
 
 ## For Developers (Building)

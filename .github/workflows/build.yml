@@ -23,11 +23,13 @@ jobs:
         run: echo "version=$(cat VERSION)" >> $GITHUB_OUTPUT
 
       - name: Build encoded script
+        if: hashFiles('zidstoretunnel.sh') != ''
         run: |
           chmod +x build.sh
           bash build.sh
 
       - name: Verify build output
+        if: hashFiles('zidstoretunnel.sh') != ''
         run: |
           if [ ! -f "zidstoretunnel" ]; then
             echo "Error: zidstoretunnel not found"
@@ -37,6 +39,7 @@ jobs:
           echo "First line: $(head -1 zidstoretunnel)"
 
       - name: Commit encoded script
+        if: hashFiles('zidstoretunnel.sh') != ''
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"

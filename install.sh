@@ -11,8 +11,8 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-REPO_URL="https://raw.githubusercontent.com/your-username/zidstoretunnel/main"
-SCRIPT_NAME="zidstoretunnel.sh"
+REPO_URL="https://raw.githubusercontent.com/zidnyzd/ScriptTunnel/main"
+SCRIPT_NAME="zidstoretunnel"
 
 echo -e "${BLUE}╔══════════════════════════════════════════════════════════════╗${NC}"
 echo -e "${BLUE}║           ZidStore Tunnel - Quick Installer                  ║${NC}"
@@ -28,7 +28,7 @@ fi
 
 # Check OS
 if [[ ! -f /etc/os-release ]]; then
-    echo -e "${RED"${RED}Cannot detect OS. This script supports Ubuntu/Debian only.${NC}"
+    echo -e "${RED}Cannot detect OS. This script supports Ubuntu/Debian only.${NC}"
     exit 1
 fi
 
@@ -62,8 +62,12 @@ fi
 echo -e "${BLUE}Starting installation...${NC}"
 echo ""
 
+# Build argument installer: DOMAIN opsional, --key dari variabel KEY (bila diisi)
+ARGS=()
 if [[ -n "$DOMAIN" ]]; then
-    bash "$SCRIPT_NAME" "$DOMAIN"
-else
-    bash "$SCRIPT_NAME"
+    ARGS+=("$DOMAIN")
 fi
+if [[ -n "$KEY" ]]; then
+    ARGS+=(--key "$KEY")
+fi
+bash "$SCRIPT_NAME" "${ARGS[@]}"

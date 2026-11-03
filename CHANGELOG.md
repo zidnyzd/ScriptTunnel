@@ -5,6 +5,43 @@ All notable changes to ZidStore Tunnel will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.3] - 2026-11-03
+
+### Added
+- Mode update in-place tanpa instalasi ulang (`--update` unduh + verifikasi, `--upgrade` terapkan, `--force` terapkan ulang versi sama)
+- Penanda versi terpasang di `/etc/zidstoretunnel.version`
+- Updater mandiri terpasang di `/usr/local/bin/zidstoretunnel` (`sudo zidstoretunnel --update`)
+- Guard sertifikat: penerbitan ulang dilewati bila sertifikat masih valid lebih dari 30 hari
+- Mode upgrade melewati upgrade paket sistem (`apt upgrade`) dan tidak memaksa reboot
+
+### Security
+- Verifikasi checksum SHA256 untuk self-update (`zidstoretunnel` via manifest API)
+- Verifikasi checksum SHA256 untuk unduhan eksternal (NodeSource, Xray-install, acme.sh, binary Xray)
+- Izin least-privilege untuk direktori dan berkas instalasi (hapus `chmod 777`)
+- Kunci lisensi dikirim via header `X-API-Key` dan disimpan `chmod 600` pada `/root/.key`
+
+### Fixed
+- Parsing argumen `--key` menangani `--key=NILAI` dan `--key NILAI` dengan validasi format kunci
+- Fail-fast tahap kritis (paket dasar, HAProxy, Xray, konfigurasi layanan, unit systemd, start service)
+- sshd_config dan common-password diunduh ke berkas sementara lalu diverifikasi sebelum dipasang
+- iptables NAT idempoten (cek `-C` sebelum `-A`)
+- `mkdir -p` untuk drop-in systemd xray
+- Pin mayor npm dan `--ignore-scripts` untuk ekspres/telegraf/axios/moment/sqlite3
+- Izin berkas hasil unduhan dinormalisasi 644 sehingga service non-root (ws) dapat membacanya (perbaikan ws.service mode 711 dari mktemp)
+- setup_bot memakai biner sqlite3 prebuilt terverifikasi dengan fallback node-gyp modern (kompatibel Python 3.13) dan deteksi kegagalan yang terlihat
+- paket python3-setuptools ditambahkan ke daftar dependencies sistem (sabuk pengaman distutils)
+- Validasi unduhan diperkuat (penolakan konten HTML/ukuran kecil) + manifest biner fodder
+- Cek arsitektur x86_64/amd64 di awal
+- Pemeriksaan akhir: ws dan limitquota wajib aktif sebelum instalasi selesai (limitip sengaja dilewati)
+- Housekeeping non-destruktif (/etc/shells, /root/.profile, /root/.bashrc, sed UUID)
+- install.sh diperbaiki (URL repo benar, mengunduh artefak encoded `zidstoretunnel`, dukungan variabel `KEY` untuk `--key`)
+- Kebersihan kode (variabel tak terpakai, `cd` tanpa pengaman, print_rainbow pembagian nol)
+- Penyiapan /tmp/ws-ips dengan kepemilikan www-data saat instalasi (mendukung ws.py least-privilege)
+
+### Changed
+- Tanpa reboot paksa: cron daily_reboot dihapus; prompt reboot dengan timeout 60 detik, non-interaktif tidak reboot
+- Dokumentasi swap diselaraskan ke 2G mengikuti implementasi
+
 ## [1.0.0] - 2024-01-XX
 
 ### Added
@@ -48,6 +85,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added NoNewPrivileges for systemd services
 
 ## [Unreleased]
+
+### Removed
+- Dukungan OpenVPN dihapus karena sudah tidak diperlukan: paket `openvpn` dan `easy-rsa`, konfigurasi TCP/UDP/SSL di `/etc/openvpn/`, sertifikat, dan berkas client `.ovpn` tidak lagi dipasang. Target rilis 1.0.4.
 
 ### Planned
 - Web-based management dashboard
