@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Kuota data SSH/SlowDNS (daemon `quota-ssh`): penghitungan per akun dari io sesi sshd (rchar+wchar termasuk proses anak relay, dinormalisasi agar setara metrik Xray), peringatan Telegram 90 persen sekali, dan penghapusan akun saat 100 persen (mengikuti perilaku daemon kuota Xray); reset kuota saat renew; prompt kuota di addssh dan renewssh; dukungan parameter kuota di apirenew; berkas di /etc/ssh/quota dan /etc/ssh/usage; tampilan kuota di menu SSH (list member + opsi "12. Set Quota SSH Account") dan checkssh.
 - Distribusi domain/pubkey SlowDNS di output akun: SSH (sudah sejak fase 2) dan kini vmess/vless/trojan (termasuk trial) menampilkan domain per protokol + public key di layar dan di file format OpenClash. Respons API pembuatan akun (`apicreate`) juga menyertakan field `slowdns_host` per protokol.
 - Hardening unduhan installer: preferensi IPv4 + timeout eksplisit pada semua unduhan jaringan (curl/wget) termasuk jalur update dan fallback fodder.
+- Dropbear 2018.76 (build statis dari sumber resmi) kini menjadi DEFAULT saat instalasi dan update: aset fodder `dropbear2018` dengan sha256 terkunci (diverifikasi saat unduh), biner lama dibackup otomatis ke `/usr/local/backup-dropbear`, `apt-mark hold`, idempoten (instalasi yang sudah 2018 tidak disentuh), opt-out `--dropbear=stock` dan paksa `--dropbear=2018`.
 
 ### Changed
 - Label versi skrip naik ke V1.0.4 LTS (menu dan ft).
