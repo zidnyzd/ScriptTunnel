@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.4] - 2026-11-04
 
 ### Added
+- Menu Setting: opsi 14 "Turn ON/OFF SlowDNS" untuk menyalakan/mematikan DNSTT dari menu (OFF menonaktifkan unit + menyembunyikan sumber domain secara idempoten sehingga bertahan pada update; ON menulis ulang routes + unit dan mengaktifkan kembali; kunci tetap dipertahankan).
+- Verifikasi akhir installer kini toleran terhadap dnstt-server yang sengaja dinonaktifkan (unit disabled/masked tidak lagi menggagalkan update).
 - SlowDNS/DNSTT fase 1: biner resmi (bamsoftware) amd64 dari fodder dengan verifikasi sha256, kunci otomatis di /etc/slowdns (server.key 600, server.pub 644), unit dnstt-server dengan forward 127.0.0.1:22 (redirect UDP 53 ke 5300 sudah ada sejak v1.0.3), aktivasi via /etc/slowdns/domain atau env DNSTT_DOMAIN, telemetri slowdns_ready/slowdns_skipped, idempoten untuk upgrade.
 - Installer: otomasi subdomain SlowDNS via API saat instalasi (POST /api/slowdns/register, fallback ke-4, fail-open, telemetri source).
 - Fitur ubah domain DNSTT via menu (sinkron Cloudflare otomatis; menulis ulang routes.conf dan unit secara konsisten).
