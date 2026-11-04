@@ -28,6 +28,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Hitungan kuota SSH: pembacaan io kini mengikuti proses anak relay sshd (privsep), bukan proses monitor, dan dinormalisasi agar setara metrik kuota Xray (sebelumnya trafik data tidak terhitung).
 - Backup/Restore kini menyertakan `/etc/slowdns` (kunci server, domain, dan routes DNSTT) agar restore ke VPS baru tidak kehilangan identitas SlowDNS; restore juga toleran terhadap backup lama: komponen yang tidak ada di arsip (mis. SlowDNS/kuota) dilewati dengan catatan `Skipped`, bukan dianggap gagal.
 - Restore tidak lagi memunculkan peringatan `/root/.vars` pada lingkungan yang tidak memiliki berkas tersebut.
+- Mode upgrade (`zidstoretunnel --update --force`) kini MEMPERTAHANKAN `config.json` Xray pelanggan: unduhan template xray-config dilewati bila konfigurasi sudah ada, sehingga akun vmess/vless/trojan tidak lagi hilang saat update.
+- Restore `/etc/slowdns` kini menghentikan `dnstt-server` sementara sebelum menyalin dan menjalankannya kembali setelahnya (tidak ada lagi kegagalan salin akibat berkas biner sedang berjalan).
 
 ### Notes
 - Kompatibilitas: unit dnstt-server gaya lama (positional domain+target) tetap didukung; VPS pelanggan existing mendapat semua fitur ini otomatis lewat `zidstoretunnel --update --force`.
