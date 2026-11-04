@@ -17,7 +17,7 @@ Namun, implementasi di skrip utama menunjukkan:
 - `timezone="Asia/Jakarta"` didefinisikan di `zidstoretunnel.sh:496`.
 - `swap_size="2G"` didefinisikan di `zidstoretunnel.sh:1647` (bukan ukuran swap yang lebih besar).
 - `domain_ns`, `cf_id`, `cf_key` tidak ditemukan di `zidstoretunnel.sh` atau di berkas konfigurasi repo. Variabel-variabel ini kemungkinan digunakan oleh aset yang diunduh dari API server (bot atau skrip manajemen) saat runtime.
-- `ZIDSTORE_VERSION="1.0.3"` di `zidstoretunnel.sh:8`, `VERSION` berisi `1.0.3`.
+- `ZIDSTORE_VERSION="1.0.4"` di `zidstoretunnel.sh:8`, `VERSION` berisi `1.0.4`.
 
 ## Aturan iptables Lengkap
 

@@ -6,11 +6,32 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [1.0.4] - 2026-11-04
+
 ### Added
 - SlowDNS/DNSTT fase 1: biner resmi (bamsoftware) amd64 dari fodder dengan verifikasi sha256, kunci otomatis di /etc/slowdns (server.key 600, server.pub 644), unit dnstt-server dengan forward 127.0.0.1:22 (redirect UDP 53 ke 5300 sudah ada sejak v1.0.3), aktivasi via /etc/slowdns/domain atau env DNSTT_DOMAIN, telemetri slowdns_ready/slowdns_skipped, idempoten untuk upgrade.
 - Installer: otomasi subdomain SlowDNS via API saat instalasi (POST /api/slowdns/register, fallback ke-4, fail-open, telemetri source).
-- Distribusi domain/pubkey SlowDNS di output akun (addssh/apicreate/trial, dashboard dan menu menampilkan domain; teks versi V1.0.3 LTS).
-- Fitur ubah domain DNSTT via menu (sinkron Cloudflare otomatis).
+- Fitur ubah domain DNSTT via menu (sinkron Cloudflare otomatis; menulis ulang routes.conf dan unit secara konsisten).
+- SlowDNS multi-protokol: satu instance multi-route (`-routes-file`) melayani SSH (127.0.0.1:22), vmess (10002), vless (10001), dan trojan (10003) melalui subdomain `vm.`/`vl.`/`tr.` di bawah zona delegasi yang sama, tanpa record Cloudflare tambahan.
+- Dukungan klien HTTP Custom v8.0.10 di mode DNS polos: echo payload label pada handshake Noise, kanal kalibrasi `dnstt-calibration/1:`, dan respons 6 tipe record (TXT/NULL/CNAME/NS/MX/SRV). Klien memakai setting payload AUTO dan TLS OFF.
+- Kuota data SSH/SlowDNS (daemon `quota-ssh`): penghitungan per akun dari io sesi sshd (rchar+wchar termasuk proses anak relay, dinormalisasi agar setara metrik Xray), peringatan Telegram 90 persen sekali, dan penghapusan akun saat 100 persen (mengikuti perilaku daemon kuota Xray); reset kuota saat renew; prompt kuota di addssh dan renewssh; dukungan parameter kuota di apirenew; berkas di /etc/ssh/quota dan /etc/ssh/usage; tampilan kuota di menu SSH (list member + opsi "12. Set Quota SSH Account") dan checkssh.
+- Distribusi domain/pubkey SlowDNS di output akun: SSH (sudah sejak fase 2) dan kini vmess/vless/trojan (termasuk trial) menampilkan domain per protokol + public key di layar dan di file format OpenClash. Respons API pembuatan akun (`apicreate`) juga menyertakan field `slowdns_host` per protokol.
+- Hardening unduhan installer: preferensi IPv4 + timeout eksplisit pada semua unduhan jaringan (curl/wget) termasuk jalur update dan fallback fodder.
+
+### Changed
+- Label versi skrip naik ke V1.0.4 LTS (menu dan ft).
+
+### Fixed
+- Deteksi login tunnel Xray: koneksi via websocket maupun DNSTT (yang masuk sebagai 127.0.0.1) kini terdeteksi di `checkvmess`/`checkvless`/`checktrojan` (sebelumnya daftar tampil kosong walau sesi aktif); daftar IP per user dan hitungan log ikut dirapikan.
+- Label port BadVPN UDP di output akun (`trialssh`, `apicreate`, `addssh`) dikoreksi menjadi `7100, 7200, 7300`.
+- Hitungan kuota SSH: pembacaan io kini mengikuti proses anak relay sshd (privsep), bukan proses monitor, dan dinormalisasi agar setara metrik kuota Xray (sebelumnya trafik data tidak terhitung).
+- Backup/Restore kini menyertakan `/etc/slowdns` (kunci server, domain, dan routes DNSTT) agar restore ke VPS baru tidak kehilangan identitas SlowDNS; restore juga toleran terhadap backup lama: komponen yang tidak ada di arsip (mis. SlowDNS/kuota) dilewati dengan catatan `Skipped`, bukan dianggap gagal.
+- Restore tidak lagi memunculkan peringatan `/root/.vars` pada lingkungan yang tidak memiliki berkas tersebut.
+
+### Notes
+- Kompatibilitas: unit dnstt-server gaya lama (positional domain+target) tetap didukung; VPS pelanggan existing mendapat semua fitur ini otomatis lewat `zidstoretunnel --update --force`.
+- Kuota SSH mengikuti konvensi Xray: limit disimpan sebagai byte; nilai 0 atau tanpa berkas berarti unlimited.
 
 ## [1.0.3] - 2026-11-03
 
