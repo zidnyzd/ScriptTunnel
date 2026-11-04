@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Distribusi domain/pubkey SlowDNS di output akun: SSH (sudah sejak fase 2) dan kini vmess/vless/trojan (termasuk trial) menampilkan domain per protokol + public key di layar dan di file format OpenClash. Respons API pembuatan akun (`apicreate`) juga menyertakan field `slowdns_host` per protokol.
 - Hardening unduhan installer: preferensi IPv4 + timeout eksplisit pada semua unduhan jaringan (curl/wget) termasuk jalur update dan fallback fodder.
 - Dropbear 2018.76 (build statis dari sumber resmi) kini menjadi DEFAULT saat instalasi dan update: aset fodder `dropbear2018` dengan sha256 terkunci (diverifikasi saat unduh), biner lama dibackup otomatis ke `/usr/local/backup-dropbear`, `apt-mark hold`, idempoten (instalasi yang sudah 2018 tidak disentuh), opt-out `--dropbear=stock` dan paksa `--dropbear=2018`.
+- Validasi keterjangkauan UDP 53 saat instalasi baru: port dicek dari luar via `POST /api/checkudp` (echo-listener sementara di dalam VPS, probe dari server API), lalu prompt memilih subdomain SlowDNS (custom, Enter = acak, `-` = tolak, timeout = acak); port tertutup atau ditolak = SlowDNS dilewati tanpa mendaftarkan record NS menggantung. Tanpa TTY, API tidak tersedia, atau python3 tidak ada = perilaku lama (fail-open); mode `--update` tidak berubah.
 
 ### Changed
 - Label versi skrip naik ke V1.0.4 LTS (menu dan ft).
