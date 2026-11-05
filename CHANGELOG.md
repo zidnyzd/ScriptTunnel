@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.4] - 2026-11-04
 
 ### Added
+- r26 (in-place): optimasi conntrack (nf_conntrack_max 262144 + persist modules-load/modprobe/sysctl; timeout tcp lebih agresif) supaya box dengan banyak user tidak drop paket saat tabel conntrack penuh. Aman live: tanpa reload modul, tanpa flush tabel, tanpa restart service.
 - Menu Setting opsi 14 (ON): bila biner dnstt belum ada, menu menawarkan unduh mandiri dengan verifikasi sha256 terhadap manifest, lalu melanjutkan aktivasi (kunci di-generate otomatis bila belum ada).
 - Menu Setting: opsi 14 "Turn ON/OFF SlowDNS" untuk menyalakan/mematikan DNSTT dari menu (OFF menulis penanda /etc/slowdns/disabled yang dihormati installer sehingga SlowDNS tidak diaktifkan ulang oleh update berikutnya; ON menghapus penanda, memulihkan domain, menulis ulang routes + unit, lalu mengaktifkan kembali; kunci + biner tetap dipertahankan).
 - Verifikasi akhir installer kini toleran terhadap dnstt-server yang sengaja dinonaktifkan (unit disabled/masked tidak lagi menggagalkan update).
